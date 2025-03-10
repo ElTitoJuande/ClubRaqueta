@@ -1,6 +1,6 @@
 import React from 'react';
 import Navbar from './Navbar';
-import logo from '../assets/ClubRaqueta.png'
+import logo from '../assets/images/ClubRaqueta.png'
 
 const Header = () => {
   return (
