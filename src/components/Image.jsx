@@ -1,6 +1,6 @@
 import React from "react";
 
-const CustomImage = ({
+const Image = ({
   src,
   alt,
   width,
@@ -37,4 +37,4 @@ const CustomImage = ({
   );
 };
 
-export default CustomImage;
+export default Image;

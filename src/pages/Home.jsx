@@ -1,12 +1,13 @@
 import React from 'react'
 import Button from '../components/Button'
+import Image from '../components/Image'
 
 const Home = () => {
   return (
     <>
       <div>
         <section className="relative h-[70vh] sm:h-[80vh] bg-gray-200">
-          <div className="bg-[url(../assets/iamges/tenisinterior.jpg)] bg-cover bg-no-repeat bg-center absolute inset-0">
+          <div className="bg-[url(../assets/images/tenisinterior.jpg)] bg-cover bg-no-repeat bg-center absolute inset-0">
             <div className="absolute inset-0 bg-gradient-to-r from-green-60 to-lime-700"></div>
           </div>
           <div className="relative h-full container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
@@ -65,122 +66,56 @@ const Home = () => {
             </div>
           </div>
         </section>
-        {/* <section className='py-20 bg-gray-100'>
-          <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
-            <div className='text-center mb-16'>
-              <h2 className='text-4xl font-bold text-lime-700 text-center mb-8'>Nuestros Servicios</h2>
-              <p className='text-gray-500 max-w-2xl mx-auto'>Descubre nuestros servicios premium diseñados para mejorar la experiencia del deporte y proporcionar comodidad y convivencia para nuestros miembros. </p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition group">
-                <div class="relative h-64">
-                 <img src="..\assets\tenisinterior.jpg" alt="Pista de tenis" />
-                </div>
-                <div class="p-6">
-                  <h3 class="text-xl font-bold text-forest-green mb-2">Clay Courts</h3>
-                  <p class="text-gray-500">8 premium clay courts maintained to international standards, perfect for a classic game of tennis.</p>
-                </div>
-              </div>
-              <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition group">
-                <div class="relative h-64">
-                 <img src="..\assets\tenisinterior.jpg" alt="Pista de tenis" />
-                </div>
-                <div class="p-6">
-                  <h3 class="text-xl font-bold text-forest-green mb-2">Clay Courts</h3>
-                  <p class="text-gray-500">8 premium clay courts maintained to international standards, perfect for a classic game of tennis.</p>
-                </div>
-              </div>
-              <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition group">
-                <div class="relative h-64">
-                 <img src="..\assets\tenisinterior.jpg" alt="Pista de tenis" />
-                </div>
-                <div class="p-6">
-                  <h3 class="text-xl font-bold text-forest-green mb-2">Clay Courts</h3>
-                  <p class="text-gray-500">8 premium clay courts maintained to international standards, perfect for a classic game of tennis.</p>
-                </div>
-              </div>
-              <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition group">
-                <div class="relative h-64">
-                 <img src="..\assets\tenisinterior.jpg" alt="Pista de tenis" />
-                </div>
-                <div class="p-6">
-                  <h3 class="text-xl font-bold text-forest-green mb-2">Clay Courts</h3>
-                  <p class="text-gray-500">8 premium clay courts maintained to international standards, perfect for a classic game of tennis.</p>
-                </div>
-              </div>
-              <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition group">
-                <div class="relative h-64">
-                 <img src="..\assets\tenisinterior.jpg" alt="Pista de tenis" />
-                </div>
-                <div class="p-6">
-                  <h3 class="text-xl font-bold text-forest-green mb-2">Clay Courts</h3>
-                  <p class="text-gray-500">8 premium clay courts maintained to international standards, perfect for a classic game of tennis.</p>
-                </div>
-              </div>
-              <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition group">
-                <div class="relative h-64">
-                 <img src="..\assets\tenisinterior.jpg" alt="Pista de tenis" />
-                </div>
-                <div class="p-6">
-                  <h3 class="text-xl font-bold text-forest-green mb-2">Clay Courts</h3>
-                  <p class="text-gray-500">8 premium clay courts maintained to international standards, perfect for a classic game of tennis.</p>
-                </div>
-              </div>
-              
-            </div>
-          </div>
-        </section> */}
         <section className="py-20 bg-ash-gray/5">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-forest-green mb-4">
-                World-Class Facilities
+                Instalaciones de clase mundial
               </h2>
               <p className="text-ash-gray max-w-2xl mx-auto">
-                Discover our premium facilities designed to enhance your tennis experience and provide exceptional comfort and convenience.
-              </p>
+                Descubra nuestras instalaciones premium diseñadas para mejorar su experiencia de tenis y brindarle comodidad y conveniencia excepcionales.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[
                 {
-                  title: "Clay Courts",
-                  description: "8 premium clay courts maintained to international standards, perfect for a classic game of tennis.",
-                  image: "/placeholder.svg?height=300&width=400&text=Clay+Courts"
+                  title: "Pistas de Tierra Batida",
+                  description: "8 pistas de tierra batida premium mantenidas con estándares internacionales, perfectas para un clásico partido de tenis.",
+                  image: "/public/images/pista1.jpg"
                 },
                 {
-                  title: "Hard Courts",
-                  description: "6 all-weather hard courts with professional lighting for day and night play.",
-                  image: "/placeholder.svg?height=300&width=400&text=Hard+Courts"
+                  title: "Pistas de Superficie Dura",
+                  description: "6 pistas de superficie dura para todo clima con iluminación profesional para jugar de día y de noche.",
+                  image: "/public/images/pista1.jpg"
                 },
                 {
-                  title: "Indoor Courts",
-                  description: "4 indoor courts with climate control for year-round play regardless of weather conditions.",
-                  image: "/placeholder.svg?height=300&width=400&text=Indoor+Courts"
+                  title: "Pistas Cubiertas",
+                  description: "4 pistas cubiertas con control de temperatura para jugar durante todo el año sin importar las condiciones climáticas.",
+                  image: "/public/images/pista1.jpg"
                 },
                 {
-                  title: "Pro Shop",
-                  description: "Fully stocked pro shop with the latest equipment, apparel, and accessories for tennis enthusiasts.",
-                  image: "/placeholder.svg?height=300&width=400&text=Pro+Shop"
+                  title: "Tienda Profesional",
+                  description: "Tienda completamente equipada con los últimos equipos, ropa y accesorios para los entusiastas del tenis.",
+                  image: "/public/images/pista1.jpg"
                 },
                 {
-                  title: "Restaurant & Bar",
-                  description: "Elegant dining area and bar offering nutritious meals, refreshing drinks, and spectacular court views.",
-                  image: "/placeholder.svg?height=300&width=400&text=Restaurant"
+                  title: "Restaurante & Bar",
+                  description: "Elegante área de comedor y bar que ofrece comidas nutritivas, bebidas refrescantes y espectaculares vistas a las pistas.",
+                  image: "/public/images/pista1.jpg"
                 },
                 {
-                  title: "Fitness Center",
-                  description: "State-of-the-art fitness center with personal trainers to help improve your game and overall fitness.",
-                  image: "/placeholder.svg?height=300&width=400&text=Fitness+Center"
+                  title: "Centro de Fitness",
+                  description: "Centro de fitness de última generación con entrenadores personales para mejorar tu juego y condición física.",
+                  image: "/public/images/pista1.jpg"
                 }
               ].map((facility, index) => (
                 <div key={index} className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition group">
                   <div className="relative h-64">
-                    {/* <Image
-                      src={facility.image || "/placeholder.svg"}
+                    <img
+                      src={facility.image}
                       alt={facility.title}
                       className="object-cover group-hover:scale-105 transition duration-300"
-                      fill
-                    /> */}
+                    // fill
+                    />
                   </div>
                   <div className="p-6">
                     <h3 className="text-xl font-bold text-forest-green mb-2">{facility.title}</h3>
@@ -189,10 +124,46 @@ const Home = () => {
                 </div>
               ))}
             </div>
+
             <div className="mt-12 text-center">
               <Button variant="outline" className="border-forest-green text-forest-green hover:bg-forest-green hover:text-white">
                 View All Facilities
               </Button>
+            </div>
+          </div>
+        </section>
+        <section className='py-20 bg-lime-700'>
+          <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
+            <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
+              <div>
+                <h2 className='text-3xl md:text-4xl font-bold mb-6'>Beneficios de ser Socio</h2>
+                <p className="text-white/90 mb-8">
+                  Únete al <strong>Club Raqueta Rute</strong> y disfruta de instalaciones de primer nivel, eventos exclusivos y una comunidad apasionada por el tenis y el pádel.
+                  Nuestra membresía te brinda acceso a una experiencia única en el mundo del deporte.
+                </p>
+                <ul className='space-y-4 mb-8'>
+                  {["Reserva prioritaria en pistas de tenis y pádel", "Acceso a torneos y eventos exclusivos para socios",
+                    "Uso gratuito del gimnasio y zona de entrenamiento",
+                    "Clases y entrenamientos con entrenadores profesionales",
+                    "Acceso a la sala exclusiva para socios y zonas de descanso",
+                    "Posibilidad de invitar a amigos con tarifas especiales"].map((benefit, index) => (
+                      <li key={index} className='flex items-start'>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-naples-yellow mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                </ul>
+                <Button className=''>Conoce el proceso de matriculación</Button>
+              </div>
+              <div className='relative h-[400px] md:h-[500px] rounded-lg overflow-hidden'>
+                <Image
+                  src="/public/images/socios.jpg"
+                  alt="Beneficios de se socio del club"
+                  className="object-cover"
+                />
+              </div>
             </div>
           </div>
         </section>
