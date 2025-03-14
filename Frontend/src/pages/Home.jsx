@@ -7,14 +7,14 @@ const Home = () => {
     <>
       <main>
         <section className="relative h-[70vh] sm:h-[80vh] bg-gray-200">
-          <div className="bg-[url(../assets/images/tenisinterior.jpg)] bg-cover bg-no-repeat bg-center absolute inset-0">
+          <div className="bg-[url('/public/images/clases.jpg')] bg-cover bg-no-repeat bg-center absolute inset-0">
             <div className="absolute inset-0 bg-gradient-to-r from-green-60 to-lime-700"></div>
           </div>
           <div className="relative h-full container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
-            <div className="max-w-xl">
+            <div className="max-w-xl ml-auto">
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6">
                 Excelencia en cada partido</h1>
-              <p className="text-xl text-white/90 mb-8">
+              <p className="text-xl text-white mb-8">
                 Bienvenido al Club Raqueta Rute - El lugar perfecto para tus partidos. Únase a nuestro exclusivo club de tenis y experimente instalaciones de primer nivel, entrenamiento profesional y una vibrante comunidad de entusiastas de la raqueta.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
