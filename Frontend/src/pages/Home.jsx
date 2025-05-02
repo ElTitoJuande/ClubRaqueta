@@ -28,7 +28,7 @@ const Home = () => {
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div className="order-2 md:order-1">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight animate-[fadeIn_1s_ease-out_forwards]">
-                  Excelencia en <span className="text-yellow-400">cada partido</span>
+                  Club <span className="text-yellow-400">Raqueta</span> Rute
                 </h1>
                 <p className="text-xl text-white/90 mb-8 leading-relaxed animate-[fadeIn_1s_ease-out_0.3s_forwards]">
                   Bienvenido al Club Raqueta Rute - El lugar perfecto para tus partidos. 
@@ -131,38 +131,38 @@ const Home = () => {
               {[
                 {
                   title: "Pistas de Tierra Batida",
-                  description: "8 pistas de tierra batida premium mantenidas con estándares internacionales.",
-                  image: "/src/assets/images/pista1.jpg",
+                  description: "Pistas de tierra batida premium mantenidas con estándares internacionales.",
+                  image: "/src/assets/images/ClubRaquete_tierra.jpg",
                   icon: "🎾"
                 },
                 {
                   title: "Pistas de Superficie Dura",
-                  description: "6 pistas de superficie dura para todo clima con iluminación profesional.",
-                  image: "/src/assets/images/pista2.jpg",
+                  description: "Pistas de superficie dura para todo clima con iluminación profesional.",
+                  image: "/src/assets/images/pista1.jpg",
                   icon: "🏸"
                 },
                 {
                   title: "Pistas Cubiertas",
-                  description: "4 pistas cubiertas con control de temperatura para jugar todo el año.",
-                  image: "/src/assets/images/pista3.jpg",
+                  description: "Pistas cubiertas con control de temperatura para jugar todo el año.",
+                  image: "/src/assets/images/ClubRaqueta_techado.jpg",
                   icon: "🏟️"
                 },
                 {
                   title: "Tienda Profesional",
                   description: "Equipada con los últimos equipos, ropa y accesorios para tenis.",
-                  image: "/src/assets/images/tienda.jpg",
+                  image: "/src/assets/images/CLubRaqueta_tienda.jpg",
                   icon: "🛍️"
                 },
                 {
                   title: "Restaurante & Bar",
                   description: "Elegante área de comedor con vistas espectaculares a las pistas.",
-                  image: "/src/assets/images/restaurante.jpg",
+                  image: "/src/assets/images/ClubRaqueta_restaurante.jpeg",
                   icon: "🍽️"
                 },
                 {
                   title: "Centro de Fitness",
                   description: "Centro de fitness de última generación con entrenadores personales.",
-                  image: "/src/assets/images/fitness.jpg",
+                  image: "/src/assets/images/ClubRaqueta_gimnasio.jpg",
                   icon: "💪"
                 }
               ].map((facility, index) => (
@@ -321,21 +321,21 @@ const Home = () => {
                   title: "Torneo Abierto de Pádel",
                   date: "20-25 de Julio, 2024",
                   description: "Competición abierta de pádel para jugadores de todos los niveles. Categorías masculina, femenina y mixta.",
-                  image: "/src/assets/images/torneo-padel.jpg",
+                  image: "/src/assets/images/ClubRaqueta_torneo.jpg",
                   icon: "🏆"
                 },
                 {
                   title: "Clínica de Entrenamiento Juvenil",
                   date: "Todos los sábados, 9AM-12PM",
                   description: "Sesiones semanales de entrenamiento intensivo para jóvenes tenistas que buscan mejorar su técnica.",
-                  image: "/src/assets/images/clinica-juvenil.jpg",
+                  image: "/src/assets/images/ClubRaqueta_clinic.webp",
                   icon: "🎾"
                 },
                 {
                   title: "Gala Benéfica de Tenis",
                   date: "10 de Agosto, 2024",
                   description: "Evento especial con exhibiciones de jugadores profesionales y actividades de recaudación de fondos.",
-                  image: "/src/assets/images/gala-benefica.jpg",
+                  image: "/src/assets/images/recogebolas.jpg",
                   icon: "✨"
                 }
               ].map((event, index) => (

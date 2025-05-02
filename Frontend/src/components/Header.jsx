@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
-import logo from '../assets/images/ClubRaqueta.png'
+import logo from '../assets/images/ClubRaqueta.png';
+import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { usuario, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,13 +39,32 @@ const Header = () => {
           
           <Navbar />
 
-          <div className="hidden md:flex items-center space-x-4">
-            <button className="text-white hover:text-yellow-400 transition-colors">
-              Iniciar Sesión
-            </button>
-            <button className="bg-yellow-500 text-lime-900 px-4 py-2 rounded-lg hover:bg-yellow-400 transition-all transform hover:scale-105 font-medium shadow-lg">
-              Reservar Pista
-            </button>
+          <div className="hidden md:flex items-center space-x-5">
+            {!usuario && (
+              <Link to="/login" className="text-white hover:text-yellow-400 transition-colors">
+                Iniciar Sesión
+              </Link>
+            )}
+            {usuario && (
+              <button
+                onClick={logout}
+                className="text-white hover:text-yellow-400 transition-colors"
+              >
+                Cerrar Sesión
+              </button>
+            )}
+          </div>
+          <div className="hidden md:flex items-center space-x-5">
+            {!usuario && (
+              <Link to="/reservas" className="bg-yellow-500 text-lime-900 px-4 py-2 rounded-lg hover:bg-yellow-400 transition-all transform hover:scale-105 font-medium shadow-lg">
+                Reservar Pista
+              </Link>
+            )}
+            {usuario && (
+              <Link to={usuario.rol === 'ADMIN' ? '/admin/dashboard' : '/socios/dashboard'} className="bg-yellow-500 text-lime-900 px-4 py-2 rounded-lg hover:bg-yellow-400 transition-all transform hover:scale-105 font-medium shadow-lg">
+                Ir al Dashboard
+              </Link>
+            )}
           </div>
         </div>
       </div>
