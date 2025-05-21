@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import Contacto from "./pages/Contacto";
 import SocioDashboard from "./pages/socios/Dashboard";
 import AdminDashboard from "./pages/admin/Dashboard";
 import GestionSocios from "./pages/admin/GestionSocios";
@@ -26,6 +27,7 @@ function App() {
         <Route path="/servicios" element={<Servicios />} />
         <Route path="/reservas" element={<Reservas />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/contacto" element={<Contacto />} />
         <Route path="/dashboard" element={<Dashboard />} />
         
         {/* Rutas de Socio */}

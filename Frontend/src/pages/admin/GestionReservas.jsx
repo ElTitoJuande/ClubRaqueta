@@ -1,31 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { reservas, cancelarReserva } from '../../data/db';
+import { obtenerReservas, cancelarReserva } from '../../services/api';
 
 const GestionReservas = () => {
   const { usuario } = useAuth();
-  const [listaReservas, setListaReservas] = useState(reservas);
+  const [listaReservas, setListaReservas] = useState([]);
+  const [cargando, setCargando] = useState(false);
   const [filtroFecha, setFiltroFecha] = useState('');
   const [filtroInstalacion, setFiltroInstalacion] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Cargar reservas cuando el componente se monta
+  useEffect(() => {
+    const cargarTodasLasReservas = async () => {
+      if (usuario && usuario.rol === 'ADMIN') {
+        setCargando(true);
+        try {
+          // Para un admin, queremos cargar todas las reservas
+          // Como el endpoint actual solo trae por usuario, usamos un usuario admin
+          const todasReservas = await obtenerReservas(usuario.id);
+          setListaReservas(todasReservas);
+          setError('');
+        } catch (err) {
+          console.error('Error al cargar reservas:', err);
+          setError('Error al cargar las reservas. Por favor, intenta nuevamente.');
+        } finally {
+          setCargando(false);
+        }
+      }
+    };
+    
+    cargarTodasLasReservas();
+  }, [usuario]);
+  
   // Verificar permisos de administrador
   if (!usuario || usuario.rol !== 'ADMIN') {
     return <Navigate to="/login" />;
   }
 
-  const handleCancelarReserva = (reservaId) => {
+  const handleCancelarReserva = async (reservaId) => {
     setError('');
     setSuccess('');
-
-    const resultado = cancelarReserva(reservaId, usuario.id, true);
-    if (resultado.success) {
-      setListaReservas(listaReservas.filter(r => r.id !== reservaId));
-      setSuccess('Reserva cancelada correctamente');
-    } else {
-      setError(resultado.error || 'Error al cancelar la reserva');
+    setCargando(true);
+    
+    try {
+      const resultado = await cancelarReserva(reservaId);
+      if (resultado.success) {
+        // Recargar las reservas para tener datos actualizados
+        const todasReservas = await obtenerReservas(usuario.id);
+        setListaReservas(todasReservas);
+        setSuccess('Reserva cancelada correctamente');
+      } else {
+        setError(resultado.error || 'Error al cancelar la reserva');
+      }
+    } catch (err) {
+      console.error('Error al cancelar reserva:', err);
+      setError(err.error || 'Error al cancelar la reserva');
+    } finally {
+      setCargando(false);
     }
   };
 
@@ -126,21 +160,21 @@ const GestionReservas = () => {
                 </thead>
                 <tbody>
                   {reservasFiltradas.map(reserva => {
-                    const usuarioReserva = usuarios.find(u => u.id === reserva.usuarioId);
                     return (
                       <tr key={reserva.id} className="hover:bg-white/10">
                         <td className="px-4 py-2 text-white">{reserva.id}</td>
-                        <td className="px-4 py-2 text-white">{usuarioReserva?.nombre || 'Usuario desconocido'}</td>
+                        <td className="px-4 py-2 text-white">{reserva.usuario_nombre || 'Usuario ' + reserva.usuario_id}</td>
                         <td className="px-4 py-2 text-white">{reserva.instalacion}</td>
-                        <td className="px-4 py-2 text-white">{reserva.recurso}</td>
+                        <td className="px-4 py-2 text-white">-</td>
                         <td className="px-4 py-2 text-white">{reserva.fecha}</td>
-                        <td className="px-4 py-2 text-white">{reserva.hora}</td>
+                        <td className="px-4 py-2 text-white">{reserva.hora_inicio} - {reserva.hora_fin}</td>
                         <td className="px-4 py-2">
                           <button
                             onClick={() => handleCancelarReserva(reserva.id)}
                             className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-400"
+                            disabled={cargando}
                           >
-                            Cancelar
+                            {cargando ? 'Procesando...' : 'Cancelar'}
                           </button>
                         </td>
                       </tr>

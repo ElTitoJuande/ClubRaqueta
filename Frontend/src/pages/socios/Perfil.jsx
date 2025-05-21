@@ -42,7 +42,7 @@ const Perfil = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-lime-800 via-lime-700 to-lime-900">
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6">
+        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 mt-20">
           <h1 className="text-3xl font-bold text-white mb-8">Mi Perfil</h1>
 
           {error && (

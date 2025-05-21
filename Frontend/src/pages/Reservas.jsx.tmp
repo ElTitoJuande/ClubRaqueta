@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { crearReserva, obtenerReservas, cancelarReserva, obtenerInstalaciones } from '../services/api';
 import '../styles/reservas.css';
 
-// Las instalaciones ahora se cargan dinÃ¡micamente desde el backend
+// Las instalaciones ahora se cargan dinámicamente desde el backend
 
 const Reservas = () => {
   const { usuario, puedeReservar } = useAuth();
@@ -28,7 +28,7 @@ const Reservas = () => {
       try {
         const listaInstalacionesResponse = await obtenerInstalaciones();
         
-        // Verificar que la respuesta no estÃ© vacÃ­a
+        // Verificar que la respuesta no esté vacía
         if (!listaInstalacionesResponse || !Array.isArray(listaInstalacionesResponse) || listaInstalacionesResponse.length === 0) {
           setError('No se pudieron cargar las instalaciones desde el servidor. Contacta con el administrador.');
           setCargandoInstalaciones(false);
@@ -41,24 +41,25 @@ const Reservas = () => {
         listaInstalacionesResponse.forEach(instalacion => {
           if (!instalacion || !instalacion.nombre) return;
           
-          // Crear clave para la instalaciÃ³n a partir del tipo o nombre
+          // Crear clave para la instalación a partir del tipo o nombre
           const key = (instalacion.tipo || instalacion.nombre)
             .toUpperCase()
             .replace(/ /g, '_')
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, ""); // Eliminar acentos
+            .normalize(\
+NFD\)
+            .replace(/[\\u0300-\\u036f]/g, \\); // Eliminar acentos
           
           // Crear un array de recursos basados en la capacidad
           let recursos = [];
           const tipo = (instalacion.tipo || '').toLowerCase();
           const capacidad = parseInt(instalacion.capacidad) || 4;
           
-          if (tipo.includes('tenis') || tipo.includes('padel') || tipo.includes('pÃ¡del')) {
-            recursos = Array.from({ length: capacidad }, (_, i) => `Pista ${i + 1}`);
+          if (tipo.includes('tenis') || tipo.includes('padel') || tipo.includes('pádel')) {
+            recursos = Array.from({ length: capacidad }, (_, i) => Pista );
           } else if (tipo.includes('gimnasio')) {
             recursos = ['Zona 1', 'Zona 2', 'Zona 3'];
           } else if (tipo.includes('restaurante') || tipo.includes('bar')) {
-            recursos = Array.from({ length: Math.min(capacidad, 30) }, (_, i) => `Mesa ${i + 1}`);
+            recursos = Array.from({ length: Math.min(capacidad, 30) }, (_, i) => Mesa );
           } else if (tipo.includes('piscina')) {
             recursos = ['Piscina Principal'];
           } else {
@@ -76,14 +77,14 @@ const Reservas = () => {
           };
         });
         
-        // Verificar que tengamos al menos una instalaciÃ³n
+        // Verificar que tengamos al menos una instalación
         if (Object.keys(instalacionesObj).length === 0) {
           setError('No se encontraron instalaciones disponibles en la base de datos');
         } else {
           setInstalaciones(instalacionesObj);
           setListaInstalaciones(listaInstalacionesResponse);
           
-          // Seleccionar la primera instalaciÃ³n por defecto
+          // Seleccionar la primera instalación por defecto
           const primeraKey = Object.keys(instalacionesObj)[0];
           setInstalacionSeleccionada(primeraKey);
         }
@@ -128,7 +129,7 @@ const Reservas = () => {
     const { horaInicio, horaFin, duracionReserva } = instalaciones[instalacion];
     for (let hora = horaInicio; hora < horaFin; hora++) {
       for (let minuto = 0; minuto < 60; minuto += duracionReserva) {
-        horas.push(`${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`);
+        horas.push(${hora.toString().padStart(2, '0')}:);
       }
     }
     return horas;
@@ -138,17 +139,17 @@ const Reservas = () => {
 
   const handleReservaClick = (dia, hora, recurso) => {
     if (!usuario) {
-      setError('Debes iniciar sesiÃ³n para hacer una reserva');
+      setError('Debes iniciar sesión para hacer una reserva');
       return;
     }
 
     if (!puedeReservar(instalacionSeleccionada)) {
-      setError('No tienes permisos para reservar esta instalaciÃ³n');
+      setError('No tienes permisos para reservar esta instalación');
       return;
     }
 
     setReservaActual({
-      instalacion: instalaciones[instalacionSeleccionada]?.nombre || 'InstalaciÃ³n',
+      instalacion: instalaciones[instalacionSeleccionada]?.nombre || 'Instalación',
       recurso,
       fecha: format(dia, 'yyyy-MM-dd'),
       hora,
@@ -216,55 +217,103 @@ const Reservas = () => {
     const totalMinutos = horas * 60 + minutos + duracionMinutos;
     const nuevasHoras = Math.floor(totalMinutos / 60);
     const nuevosMinutos = totalMinutos % 60;
-    return `${nuevasHoras.toString().padStart(2, '0')}:${nuevosMinutos.toString().padStart(2, '0')}`;
+    return ${nuevasHoras.toString().padStart(2, '0')}:;
   };
   
   if (!usuario) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-lime-800 via-lime-700 to-lime-900 text-white p-6 pt-24 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-6">Sistema de Reservas</h1>
-          <p className="text-xl mb-8">Debes iniciar sesiÃ³n para acceder al sistema de reservas.</p>
+      <div className=\min-h-screen
+bg-gradient-to-br
+from-lime-800
+via-lime-700
+to-lime-900
+text-white
+p-6
+pt-24
+flex
+items-center
+justify-center\>
+        <div className=\text-center\>
+          <h1 className=\text-4xl
+font-bold
+mb-6\>Sistema de Reservas</h1>
+          <p className=\text-xl
+mb-8\>Debes iniciar sesión para acceder al sistema de reservas.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lime-800 via-lime-700 to-lime-900 text-white p-6 pt-24">
-      <div className="container mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-center">Sistema de Reservas</h1>
+    <div className=\min-h-screen
+bg-gradient-to-br
+from-lime-800
+via-lime-700
+to-lime-900
+text-white
+p-6
+pt-24\>
+      <div className=\container
+mx-auto\>
+        <h1 className=\text-4xl
+font-bold
+mb-8
+text-center\>Sistema de Reservas</h1>
 
         {error && (
-          <div className="bg-red-500/20 border border-red-500 p-4 rounded-lg mb-6 text-center">
+          <div className=\bg-red-500/20
+border
+border-red-500
+p-4
+rounded-lg
+mb-6
+text-center\>
             {error}
           </div>
         )}
         
         {cargandoInstalaciones && (
-          <div className="bg-blue-500/20 border border-blue-500 p-4 rounded-lg mb-6 text-center">
+          <div className=\bg-blue-500/20
+border
+border-blue-500
+p-4
+rounded-lg
+mb-6
+text-center\>
             Cargando instalaciones...
           </div>
         )}
 
         {/* Info del usuario */}
-        <div className="mb-6 p-4 bg-white/10 rounded-lg">
-          <p className="font-semibold">Usuario: {usuario.nombre}</p>
+        <div className=\mb-6
+p-4
+bg-white/10
+rounded-lg\>
+          <p className=\font-semibold\>Usuario: {usuario.nombre}</p>
           <p>Rol: {usuario.rol}</p>
         </div>
 
-        {/* Selector de instalaciÃ³n */}
-        <div className="mb-8">
+        {/* Selector de instalación */}
+        <div className=\mb-8\>
           <select
             value={instalacionSeleccionada}
             onChange={(e) => setInstalacionSeleccionada(e.target.value)}
-            className="w-full md:w-auto px-4 py-2 rounded-lg bg-white/10 backdrop-blur-lg border border-white/20 text-white"
+            className=\w-full
+md:w-auto
+px-4
+py-2
+rounded-lg
+bg-white/10
+backdrop-blur-lg
+border
+border-white/20
+text-white\
             disabled={cargandoInstalaciones}
           >
             {Object.entries(instalaciones).map(([key, { nombre, requiereSocio }]) => {
               if (!requiereSocio || usuario.rol !== 'INVITADO') {
                 return (
-                  <option key={key} value={key} className="bg-lime-800">
+                  <option key={key} value={key} className=\bg-lime-800\>
                     {nombre}
                   </option>
                 );
@@ -275,19 +324,33 @@ const Reservas = () => {
         </div>
 
         {/* Navegador de semanas */}
-        <div className="flex justify-between items-center mb-6">
+        <div className=\flex
+justify-between
+items-center
+mb-6\>
           <button 
             onClick={() => cambiarSemana(-1)}
-            className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+            className=\px-4
+py-2
+rounded-lg
+bg-white/10
+hover:bg-white/20
+transition-colors\
           >
             Semana anterior
           </button>
-          <h2 className="text-xl font-semibold">
+          <h2 className=\text-xl
+font-semibold\>
             Semana del {format(semanaActual, 'd', { locale: es })} de {format(semanaActual, 'MMMM', { locale: es })}
           </h2>
           <button 
             onClick={() => cambiarSemana(1)}
-            className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+            className=\px-4
+py-2
+rounded-lg
+bg-white/10
+hover:bg-white/20
+transition-colors\
           >
             Semana siguiente
           </button>
@@ -295,17 +358,32 @@ const Reservas = () => {
 
         {/* Mis Reservas */}
         {misReservas.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">Mis Reservas</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className=\mb-8\>
+            <h2 className=\text-2xl
+font-bold
+mb-4\>Mis Reservas</h2>
+            <div className=\grid
+grid-cols-1
+md:grid-cols-2
+lg:grid-cols-3
+gap-4\>
               {misReservas.map((reserva) => (
-                <div key={reserva.id} className="p-4 bg-white/10 rounded-lg">
-                  <p className="font-semibold">{reserva.instalacion}</p>
+                <div key={reserva.id} className=\p-4
+bg-white/10
+rounded-lg\>
+                  <p className=\font-semibold\>{reserva.instalacion}</p>
                   <p>Fecha: {format(new Date(reserva.fecha), 'dd/MM/yyyy')}</p>
                   <p>Hora: {reserva.hora_inicio} - {reserva.hora_fin}</p>
                   <button 
                     onClick={() => handleCancelarReserva(reserva.id)}
-                    className="mt-2 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-400 transition-colors"
+                    className=\mt-2
+px-3
+py-1
+bg-red-500
+text-white
+rounded-lg
+hover:bg-red-400
+transition-colors\
                     disabled={cargando}
                   >
                     {cargando ? 'Procesando...' : 'Cancelar'}
@@ -317,35 +395,42 @@ const Reservas = () => {
         )}
 
         {/* Calendario de reservas */}
-        <div className="overflow-x-auto">
-          <div className="min-w-[1000px]">
-            {/* Cabecera de dÃ­as */}
-            <div className="grid grid-cols-8 gap-2 mb-4">
-              <div className="font-semibold p-2">Hora</div>
+        <div className=\overflow-x-auto\>
+          <div className=\min-w-[1000px]\>
+            {/* Cabecera de días */}
+            <div className=\grid
+grid-cols-8
+gap-2
+mb-4\>
+              <div className=\font-semibold
+p-2\>Hora</div>
               {diasSemana.map((dia) => (
-                <div key={dia.toString()} className="font-semibold p-2 text-center">
+                <div key={dia.toString()} className=\font-semibold
+p-2
+text-center\>
                   {format(dia, 'EEEE d', { locale: es })}
                 </div>
               ))}
             </div>
 
-            {/* CuadrÃ­cula de reservas */}
+            {/* Cuadrícula de reservas */}
             {instalacionSeleccionada && instalaciones[instalacionSeleccionada] && (
-              <div className="space-y-1">
+              <div className=\space-y-1\>
                 {generarHoras(instalacionSeleccionada).map((hora) => (
-                  <div key={hora} className="grid grid-cols-8 gap-2">
-                    <div className="p-2 font-medium">{hora}</div>
+                  <div key={hora} className=\grid
+grid-cols-8
+gap-2\>
+                    <div className=\p-2
+font-medium\>{hora}</div>
                     {diasSemana.map((dia) => (
-                      <div key={`${dia}-${hora}`} className="grid gap-1">
+                      <div key={${dia}-} className=\grid
+gap-1\>
                         {instalaciones[instalacionSeleccionada].recursos.map((recurso) => (
                           <button
-                            key={`${dia}-${hora}-${recurso}`}
+                            key={${dia}--}
                             onClick={() => handleReservaClick(dia, hora, recurso)}
                             disabled={!puedeReservar(instalacionSeleccionada)}
-                            className={`p-2 text-sm rounded transition-colors text-center ${puedeReservar(instalacionSeleccionada)
-                                ? 'bg-white/10 hover:bg-white/20'
-                                : 'bg-white/5 cursor-not-allowed'
-                              }`}
+                            className={p-2 text-sm rounded transition-colors text-center }
                           >
                             {recurso}
                           </button>
@@ -361,25 +446,51 @@ const Reservas = () => {
 
         {/* Modal de reserva */}
         {reservaActual && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
-            <div className="bg-lime-800 p-6 rounded-lg max-w-md w-full">
-              <h2 className="text-2xl font-bold mb-4">Confirmar Reserva</h2>
-              <div className="space-y-2 mb-6">
-                <p><strong>InstalaciÃ³n:</strong> {reservaActual.instalacion}</p>
+          <div className=\fixed
+inset-0
+bg-black/50
+flex
+items-center
+justify-center
+p-4\>
+            <div className=\bg-lime-800
+p-6
+rounded-lg
+max-w-md
+w-full\>
+              <h2 className=\text-2xl
+font-bold
+mb-4\>Confirmar Reserva</h2>
+              <div className=\space-y-2
+mb-6\>
+                <p><strong>Instalación:</strong> {reservaActual.instalacion}</p>
                 <p><strong>Recurso:</strong> {reservaActual.recurso}</p>
                 <p><strong>Fecha:</strong> {format(new Date(reservaActual.fecha), 'dd/MM/yyyy')}</p>
                 <p><strong>Hora:</strong> {reservaActual.hora}</p>
               </div>
-              <div className="flex justify-end space-x-4">
+              <div className=\flex
+justify-end
+space-x-4\>
                 <button
                   onClick={() => setReservaActual(null)}
-                  className="px-4 py-2 bg-white/10 rounded hover:bg-white/20 transition-colors"
+                  className=\px-4
+py-2
+bg-white/10
+rounded
+hover:bg-white/20
+transition-colors\
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={confirmarReserva}
-                  className="px-4 py-2 bg-yellow-500 text-lime-900 rounded hover:bg-yellow-400 transition-colors"
+                  className=\px-4
+py-2
+bg-yellow-500
+text-lime-900
+rounded
+hover:bg-yellow-400
+transition-colors\
                 >
                   Confirmar Reserva
                 </button>

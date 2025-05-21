@@ -1,27 +1,38 @@
 import React, { createContext, useState, useContext } from 'react';
-import { usuarios, ROLES } from '../data/db';
+import { loginUsuario, guardarUsuario, obtenerUsuario, cerrarSesion } from '../services/api';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [usuario, setUsuario] = useState(() => {
-    const savedUser = localStorage.getItem('clubRaquetaUser');
-    return savedUser ? JSON.parse(savedUser) : null;
+    return obtenerUsuario();
   });
   
-  const login = (email, password) => {
-    const user = usuarios.find(u => u.email === email && u.password === password);
-    if (user) {
-      setUsuario(user);
-      localStorage.setItem('clubRaquetaUser', JSON.stringify(user));
-      return { success: true, user };
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  const login = async (email, password) => {
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const userData = await loginUsuario(email, password);
+      setUsuario(userData);
+      guardarUsuario(userData);
+      setIsLoading(false);
+      console.log('Login exitoso:', userData);
+      return { success: true, user: userData };
+    } catch (err) {
+      setIsLoading(false);
+      setError(err.error || 'Error al iniciar sesión');
+      console.error('Error de login:', err);
+      return { success: false, error: err.error || 'Error al iniciar sesión' };
     }
-    return { success: false, error: 'Credenciales inválidas' };
   };
   
   const logout = () => {
     setUsuario(null);
-    localStorage.removeItem('clubRaquetaUser');
+    cerrarSesion();
   };
 
   const puedeReservar = (instalacion) => {
@@ -39,7 +50,8 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     puedeReservar,
-    roles: ROLES
+    isLoading,
+    error
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

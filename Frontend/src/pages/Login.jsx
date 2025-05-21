@@ -9,15 +9,20 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
-    const result = login(email, password);
-    if (result.success) {
-      navigate('/dashboard');
-    } else {
-      setError('Credenciales inválidas');
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setError(result.error || 'Credenciales inválidas');
+      }
+    } catch (err) {
+      setError(err.error || 'Error al conectar con el servidor');
+      console.error('Error durante el login:', err);
     }
   };
 
@@ -68,16 +73,6 @@ const Login = () => {
             Iniciar Sesión
           </button>
         </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-white/80">
-            Para acceder como invitado usa:
-          </p>
-          <p className="text-white/60 text-sm mt-1">
-            Email: invitado@clubraqueta.com<br />
-            Contraseña: invitado123
-          </p>
-        </div>
       </div>
     </div>
   );

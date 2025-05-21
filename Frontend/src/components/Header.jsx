@@ -18,54 +18,54 @@ const Header = () => {
   }, []);
 
   return (
-    <header 
-      className={`fixed w-full z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-lime-800/95 backdrop-blur-sm shadow-lg py-2' 
-          : 'bg-transparent py-4'
-      }`}
+    <header
+      className={`fixed w-full z-50 transition-all duration-300 ${isScrolled
+        ? 'bg-lime-800/95 backdrop-blur-sm shadow-lg py-2'
+        : 'bg-transparent py-4'
+        }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <img 
-              src={logo} 
-              alt="Club Raqueta Rute" 
-              className={`transition-all duration-300 ${
-                isScrolled ? 'h-12' : 'h-16'
-              }`}
+            <img
+              src={logo}
+              alt="Club Raqueta Rute"
+              className={`transition-all duration-300 ${isScrolled ? 'h-12' : 'h-16'
+                }`}
             />
           </div>
-          
-          <Navbar />
 
+          <Navbar />
           <div className="hidden md:flex items-center space-x-5">
-            {!usuario && (
-              <Link to="/login" className="text-white hover:text-yellow-400 transition-colors">
-                Iniciar Sesión
-              </Link>
-            )}
-            {usuario && (
-              <button
-                onClick={logout}
-                className="text-white hover:text-yellow-400 transition-colors"
-              >
-                Cerrar Sesión
-              </button>
-            )}
+            <div className="hidden md:flex items-center space-x-5">
+              {!usuario && (
+                <Link to="/login" className="text-white hover:text-yellow-400 transition-colors">
+                  Iniciar Sesión
+                </Link>
+              )}
+              {usuario && (
+                <button
+                  onClick={logout}
+                  className="text-white hover:text-yellow-400 transition-colors"
+                >
+                  Cerrar Sesión
+                </button>
+              )}
+            </div>
+            <div className="hidden md:flex items-center space-x-5">
+              {!usuario && (
+                <Link to="/reservas" className="bg-yellow-500 text-lime-900 px-4 py-2 rounded-lg hover:bg-yellow-400 transition-all transform hover:scale-105 font-medium shadow-lg">
+                  Reservar Pista
+                </Link>
+              )}
+              {usuario && (
+                <Link to={usuario.rol === 'ADMIN' ? '/admin/dashboard' : '/socios/dashboard'} className="bg-yellow-500 text-lime-900 px-4 py-2 rounded-lg hover:bg-yellow-400 transition-all transform hover:scale-105 font-medium shadow-lg">
+                  Ir al Dashboard
+                </Link>
+              )}
+            </div>
           </div>
-          <div className="hidden md:flex items-center space-x-5">
-            {!usuario && (
-              <Link to="/reservas" className="bg-yellow-500 text-lime-900 px-4 py-2 rounded-lg hover:bg-yellow-400 transition-all transform hover:scale-105 font-medium shadow-lg">
-                Reservar Pista
-              </Link>
-            )}
-            {usuario && (
-              <Link to={usuario.rol === 'ADMIN' ? '/admin/dashboard' : '/socios/dashboard'} className="bg-yellow-500 text-lime-900 px-4 py-2 rounded-lg hover:bg-yellow-400 transition-all transform hover:scale-105 font-medium shadow-lg">
-                Ir al Dashboard
-              </Link>
-            )}
-          </div>
+
         </div>
       </div>
     </header>

@@ -27,8 +27,6 @@ export const usuarios = [
   }
 ];
 
-export const reservas = [];
-
 // Roles y sus permisos
 export const ROLES = {
   ADMIN: {
@@ -53,20 +51,6 @@ export const validarDisponibilidad = (nuevaReserva) => {
     reserva.recurso === nuevaReserva.recurso &&
     reserva.instalacion === nuevaReserva.instalacion
   );
-};
-
-// Función para añadir una reserva
-export const agregarReserva = (reserva) => {
-  if (validarDisponibilidad(reserva)) {
-    const nuevaReserva = {
-      id: Date.now(),
-      ...reserva,
-      fechaCreacion: new Date().toISOString()
-    };
-    reservas.push(nuevaReserva);
-    return { success: true, reserva: nuevaReserva };
-  }
-  return { success: false, error: 'La instalación no está disponible para ese horario' };
 };
 
 // Función para obtener las reservas de un usuario

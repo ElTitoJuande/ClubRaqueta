@@ -37,7 +37,7 @@ const Home = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 animate-[fadeIn_1s_ease-out_0.6s_forwards]">
                   <Link to="/contacto">
-                    <Button className="bg-yellow-500 text-lime-900 hover:bg-yellow-400 text-lg px-8 py-4 shadow-lg transform hover:scale-105 transition-all">
+                    <Button className="bg-yellow-500 text-lime-900 hover:bg-yellow-400 hover:text-lime-600 text-lg px-8 py-4 shadow-lg transform hover:scale-105 transition-all">
                       Únete Ahora
                     </Button>
                   </Link>
@@ -223,7 +223,7 @@ const Home = () => {
                   ))}
                 </ul>
                 <Link to="/contacto">
-                  <Button className="bg-yellow-500 text-lime-900 hover:bg-yellow-400 text-lg px-8 py-4 shadow-lg transform hover:scale-105 transition-all">
+                  <Button className="bg-yellow-500 text-lime-900  hover:text-lime-600 text-lg px-8 py-4 shadow-lg transform hover:scale-105 transition-all">
                     Conoce el proceso de matriculación
                   </Button>
                 </Link>
