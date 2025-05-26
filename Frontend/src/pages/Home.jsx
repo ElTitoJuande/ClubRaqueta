@@ -261,19 +261,19 @@ const Home = () => {
                   quote: "Las instalaciones son increíbles y los entrenadores me han ayudado a mejorar muchísimo mi nivel. No es solo un club, es una familia.",
                   name: "Lucía Fernández",
                   title: "Socia desde 2019",
-                  image: "/src/assets/images/testimonio1.jpg"
+                  image: "/src/assets/images/maite.png"
                 },
                 {
                   quote: "Mi familia y yo disfrutamos de un ambiente acogedor y programas para todas las edades. Los eventos sociales son lo mejor del club.",
                   name: "Carlos Martínez",
                   title: "Membresía Familiar",
-                  image: "/src/assets/images/testimonio2.jpg"
+                  image: "/src/assets/images/pacho.png"
                 },
                 {
-                  quote: "Como jugador competitivo, agradezco las pistas de primer nivel y los torneos organizados. Un club realmente profesional.",
+                  quote: "Como jugadora competitiva, agradezco las pistas de primer nivel y los torneos organizados. Un club realmente profesional.",
                   name: "Elena Gómez",
                   title: "Jugadora de Torneos",
-                  image: "/src/assets/images/testimonio3.jpg"
+                  image: "/src/assets/images/eli.png"
                 }
               ].map((testimonial, index) => (
                 <div key={index} className="bg-gradient-to-br from-lime-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
@@ -318,9 +318,9 @@ const Home = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 {
-                  title: "Torneo Abierto de Pádel",
+                  title: "Torneo Abierto de Tenis",
                   date: "20-25 de Julio, 2024",
-                  description: "Competición abierta de pádel para jugadores de todos los niveles. Categorías masculina, femenina y mixta.",
+                  description: "Competición abierta de tenis para jugadores de todos los niveles. Categorías masculina, femenina y mixta.",
                   image: "/src/assets/images/ClubRaqueta_torneo.jpg",
                   icon: "🏆"
                 },

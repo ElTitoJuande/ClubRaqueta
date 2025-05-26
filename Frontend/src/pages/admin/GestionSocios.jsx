@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { usuarios, registrarUsuario } from '../../data/db';
+import { obtenerUsuarios, registrarUsuario } from '../../data/db';
 
 const GestionSocios = () => {
   const { usuario } = useAuth();
-  const [listaSocios, setListaSocios] = useState(usuarios);
+  const [listaSocios, setListaSocios] = useState([]);
+  const [cargando, setCargando] = useState(true);
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
@@ -15,6 +16,28 @@ const GestionSocios = () => {
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Cargar usuarios al montar el componente
+  useEffect(() => {
+    const cargarUsuarios = async () => {
+      try {
+        setCargando(true);
+        const respuesta = await obtenerUsuarios();
+        if (respuesta.success) {
+          setListaSocios(respuesta.usuarios);
+        } else {
+          setError(respuesta.error || 'Error al cargar los usuarios');
+        }
+      } catch (err) {
+        setError('Error al conectar con el servidor');
+        console.error(err);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarUsuarios();
+  }, []);
 
   // Verificar permisos de administrador
   if (!usuario || usuario.rol !== 'ADMIN') {
@@ -42,24 +65,34 @@ const GestionSocios = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
 
-    const resultado = registrarUsuario(formData);
-    if (resultado.success) {
-      setListaSocios([...listaSocios, resultado.usuario]);
-      setFormData({
-        nombre: '',
-        email: '',
-        password: '',
-        rol: 'SOCIO',
-        telefono: ''
-      });
-      setSuccess('Usuario registrado correctamente');
-    } else {
-      setError(resultado.error);
+    try {
+      const resultado = await registrarUsuario(formData);
+      if (resultado.success) {
+        // Recargar la lista completa después de añadir un usuario
+        const respuesta = await obtenerUsuarios();
+        if (respuesta.success) {
+          setListaSocios(respuesta.usuarios);
+        }
+
+        setFormData({
+          nombre: '',
+          email: '',
+          password: '',
+          rol: 'SOCIO',
+          telefono: ''
+        });
+        setSuccess('Usuario registrado correctamente');
+      } else {
+        setError(resultado.error || 'Error al registrar el usuario');
+      }
+    } catch (err) {
+      setError('Error en la conexión con el servidor');
+      console.error(err);
     }
   };
 
@@ -179,39 +212,46 @@ const GestionSocios = () => {
         <div className="bg-white/10 backdrop-blur-lg p-6 rounded-xl shadow-lg">
           <h2 className="text-xl font-semibold text-white mb-4">Usuarios Registrados</h2>
           
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-white/5">
-                  <th className="px-4 py-2 text-white">ID</th>
-                  <th className="px-4 py-2 text-white">Nombre</th>
-                  <th className="px-4 py-2 text-white">Email</th>
-                  <th className="px-4 py-2 text-white">Rol</th>
-                  <th className="px-4 py-2 text-white">Teléfono</th>
-                  <th className="px-4 py-2 text-white">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {listaSocios.map(socio => (
-                  <tr key={socio.id} className="hover:bg-white/10">
-                    <td className="px-4 py-2 text-white">{socio.id}</td>
-                    <td className="px-4 py-2 text-white">{socio.nombre}</td>
-                    <td className="px-4 py-2 text-white">{socio.email}</td>
-                    <td className="px-4 py-2 text-white">{socio.rol}</td>
-                    <td className="px-4 py-2 text-white">{socio.telefono}</td>
-                    <td className="px-4 py-2">
-                      <button className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-400 mr-2">
-                        Editar
-                      </button>
-                      <button className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-400">
-                        Eliminar
-                      </button>
-                    </td>
+          {cargando ? (
+            <div className="text-center py-8">
+              <p className="text-white">Cargando usuarios...</p>
+            </div>
+          ) : error ? (
+            <div className="bg-red-500/20 border border-red-500 text-white p-3 rounded-lg mb-4">
+              {error}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-white/5">
+                    <th className="px-4 py-2 text-white">ID</th>
+                    <th className="px-4 py-2 text-white">Nombre</th>
+                    <th className="px-4 py-2 text-white">Email</th>
+                    <th className="px-4 py-2 text-white">Rol</th>
+                    <th className="px-4 py-2 text-white">Teléfono</th>
+                    <th className="px-4 py-2 text-white">Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {listaSocios.map(socio => (
+                    <tr key={socio.id} className="hover:bg-white/10">
+                      <td className="px-4 py-2 text-white">{socio.id}</td>
+                      <td className="px-4 py-2 text-white">{socio.nombre}</td>
+                      <td className="px-4 py-2 text-white">{socio.email}</td>
+                      <td className="px-4 py-2 text-white">{socio.rol}</td>
+                      <td className="px-4 py-2 text-white">{socio.telefono}</td>
+                      <td className="px-4 py-2 text-white">
+                        <button className="bg-yellow-500 text-lime-900 px-2 py-1 rounded mr-2 text-sm">
+                          Editar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>

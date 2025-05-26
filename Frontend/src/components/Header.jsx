@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import logo from '../assets/images/ClubRaqueta.png';
 import { useAuth } from '../contexts/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const { usuario, logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,7 +46,10 @@ const Header = () => {
               )}
               {usuario && (
                 <button
-                  onClick={logout}
+                  onClick={() => {
+                    logout();
+                    navigate('/');
+                  }}
                   className="text-white hover:text-yellow-400 transition-colors"
                 >
                   Cerrar Sesión

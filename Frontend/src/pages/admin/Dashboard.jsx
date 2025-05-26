@@ -6,7 +6,7 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-lime-800 via-lime-700 to-lime-900">
       
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6">
+        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 mt-24">
           <h1 className="text-3xl font-bold text-white mb-8">Panel de Administración</h1>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

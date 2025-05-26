@@ -19,8 +19,9 @@ const GestionReservas = () => {
         setCargando(true);
         try {
           // Para un admin, queremos cargar todas las reservas
-          // Como el endpoint actual solo trae por usuario, usamos un usuario admin
-          const todasReservas = await obtenerReservas(usuario.id);
+          // Usamos un parámetro especial para el admin, como "all" o 0
+          // El backend debería estar configurado para responder a esta solicitud especial
+          const todasReservas = await obtenerReservas('all');
           setListaReservas(todasReservas);
           setError('');
         } catch (err) {
@@ -46,10 +47,11 @@ const GestionReservas = () => {
     setCargando(true);
     
     try {
-      const resultado = await cancelarReserva(reservaId);
+      // Pasamos el usuario.id y establecemos esAdmin como true para el administrador
+      const resultado = await cancelarReserva(reservaId, usuario.id, true);
       if (resultado.success) {
         // Recargar las reservas para tener datos actualizados
-        const todasReservas = await obtenerReservas(usuario.id);
+        const todasReservas = await obtenerReservas('all');
         setListaReservas(todasReservas);
         setSuccess('Reserva cancelada correctamente');
       } else {
@@ -72,7 +74,8 @@ const GestionReservas = () => {
     }
     
     if (filtroInstalacion) {
-      cumpleFiltroInstalacion = reserva.instalacion.includes(filtroInstalacion);
+      // Usamos instalacionNombre en lugar de instalacion
+      cumpleFiltroInstalacion = reserva.instalacionNombre && reserva.instalacionNombre.includes(filtroInstalacion);
     }
 
     return cumpleFiltroFecha && cumpleFiltroInstalacion;
@@ -121,6 +124,8 @@ const GestionReservas = () => {
                 <option value="Tenis">Pistas de Tenis</option>
                 <option value="Pádel">Pistas de Pádel</option>
                 <option value="Gimnasio">Gimnasio</option>
+                <option value="Restaurante">Restaurante</option>
+                <option value="Piscina">Piscina</option>
               </select>
             </div>
 
@@ -163,11 +168,11 @@ const GestionReservas = () => {
                     return (
                       <tr key={reserva.id} className="hover:bg-white/10">
                         <td className="px-4 py-2 text-white">{reserva.id}</td>
-                        <td className="px-4 py-2 text-white">{reserva.usuario_nombre || 'Usuario ' + reserva.usuario_id}</td>
-                        <td className="px-4 py-2 text-white">{reserva.instalacion}</td>
+                        <td className="px-4 py-2 text-white">{reserva.usuarioNombre || 'Usuario ' + reserva.usuarioId}</td>
+                        <td className="px-4 py-2 text-white">{reserva.instalacionNombre}</td>
                         <td className="px-4 py-2 text-white">-</td>
                         <td className="px-4 py-2 text-white">{reserva.fecha}</td>
-                        <td className="px-4 py-2 text-white">{reserva.hora_inicio} - {reserva.hora_fin}</td>
+                        <td className="px-4 py-2 text-white">{reserva.horaInicio} - {reserva.horaFin}</td>
                         <td className="px-4 py-2">
                           <button
                             onClick={() => handleCancelarReserva(reserva.id)}

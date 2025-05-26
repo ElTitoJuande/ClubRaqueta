@@ -48,22 +48,8 @@ const Reservas = () => {
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, ""); // Eliminar acentos
           
-          // Crear un array de recursos basados en la capacidad
-          let recursos = [];
-          const tipo = (instalacion.tipo || '').toLowerCase();
-          const capacidad = parseInt(instalacion.capacidad) || 4;
-          
-          if (tipo.includes('tenis') || tipo.includes('padel') || tipo.includes('pádel')) {
-            recursos = Array.from({ length: capacidad }, (_, i) => `Pista ${i + 1}`);
-          } else if (tipo.includes('gimnasio')) {
-            recursos = ['Zona 1', 'Zona 2', 'Zona 3'];
-          } else if (tipo.includes('restaurante') || tipo.includes('bar')) {
-            recursos = Array.from({ length: Math.min(capacidad, 30) }, (_, i) => `Mesa ${i + 1}`);
-          } else if (tipo.includes('piscina')) {
-            recursos = ['Piscina Principal'];
-          } else {
-            recursos = [instalacion.nombre];
-          }
+          // Para todas las instalaciones, mostramos solo una opción
+          const recursos = [instalacion.nombre];
           
           instalacionesObj[key] = {
             id: parseInt(instalacion.id),
@@ -107,7 +93,20 @@ const Reservas = () => {
         setCargando(true);
         try {
           const reservasUsuario = await obtenerReservas(usuario.id);
-          setMisReservas(reservasUsuario);
+          
+          // Normalizar los datos de las reservas para asegurar consistencia
+          const reservasNormalizadas = reservasUsuario.map(reserva => ({
+            id: reserva.id,
+            instalacionId: reserva.instalacionId || reserva.instalacion_id,
+            instalacionNombre: reserva.instalacionNombre || reserva.instalacion_nombre || reserva.instalacion,
+            fecha: reserva.fecha,
+            horaInicio: reserva.horaInicio || reserva.hora_inicio,
+            horaFin: reserva.horaFin || reserva.hora_fin,
+            recurso: reserva.recurso || reserva.instalacionRecurso,
+            usuarioId: reserva.usuarioId || reserva.usuario_id
+          }));
+          
+          setMisReservas(reservasNormalizadas);
           setError('');
         } catch (err) {
           console.error('Error al cargar reservas:', err);
@@ -190,18 +189,21 @@ const Reservas = () => {
   const handleCancelarReserva = async (reservaId) => {
     setCargando(true);
     try {
-      const resultado = await cancelarReserva(reservaId);
-      if (resultado.success) {
+      // Pasamos el ID del usuario y si es admin como parámetros adicionales
+      const esAdmin = usuario && usuario.rol === 'ADMIN';
+      const resultado = await cancelarReserva(reservaId, usuario.id, esAdmin);
+      
+      if (resultado && resultado.success) {
         // Recargar las reservas desde el servidor para tener datos actualizados
         const reservasActualizadas = await obtenerReservas(usuario.id);
         setMisReservas(reservasActualizadas);
         setError('');
       } else {
-        setError(resultado.error || 'Error al cancelar la reserva');
+        setError((resultado && resultado.error) || 'Error al cancelar la reserva');
       }
     } catch (err) {
       console.error('Error al cancelar reserva:', err);
-      setError(err.error || 'Error al cancelar la reserva. Por favor, intenta nuevamente.');
+      setError((err && err.error) || 'Error al cancelar la reserva. Por favor, intenta nuevamente.');
     } finally {
       setCargando(false);
     }
@@ -299,13 +301,14 @@ const Reservas = () => {
             <h2 className="text-2xl font-bold mb-4">Mis Reservas</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {misReservas.map((reserva) => (
-                <div key={reserva.id} className="p-4 bg-white/10 rounded-lg">
-                  <p className="font-semibold">{reserva.instalacion}</p>
-                  <p>Fecha: {format(new Date(reserva.fecha), 'dd/MM/yyyy')}</p>
-                  <p>Hora: {reserva.hora_inicio} - {reserva.hora_fin}</p>
+                <div key={reserva.id} className="p-4 bg-white/10 backdrop-blur-lg rounded-lg shadow-lg">
+                  <p className="font-semibold text-xl mb-2">{reserva.instalacionNombre}</p>
+                  <p><span className="font-medium">Fecha:</span> {format(new Date(reserva.fecha), 'dd/MM/yyyy')}</p>
+                  <p><span className="font-medium">Hora:</span> {reserva.horaInicio} - {reserva.horaFin}</p>
+                  {reserva.recurso && <p><span className="font-medium">Recurso:</span> {reserva.recurso}</p>}
                   <button 
                     onClick={() => handleCancelarReserva(reserva.id)}
-                    className="mt-2 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-400 transition-colors"
+                    className="mt-4 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-400 transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed"
                     disabled={cargando}
                   >
                     {cargando ? 'Procesando...' : 'Cancelar'}
