@@ -405,7 +405,7 @@ const Home = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/contacto">
-                  <Button className="bg-yellow-500 text-lime-900 hover:bg-yellow-400 text-lg px-8 py-4 shadow-lg transform hover:scale-105 transition-all">
+                  <Button className="bg-yellow-500 text-lime-900 hover:bg-yellow-400 hover:text-lime-600 text-lg px-8 py-4 shadow-lg transform hover:scale-105 transition-all">
                     Hazte Socio
                   </Button>
                 </Link>
