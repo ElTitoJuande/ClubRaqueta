@@ -136,7 +136,7 @@ const Servicios = () => {
       ),
       imagenes: ['/src/assets/images/pista1-2.jpg'],
       boton: (
-        <Button className="bg-yellow-500 text-lime-900 hover:bg-yellow-400 px-4 py-2 rounded-lg font-semibold" onClick={() => window.location.href = '/contacto'}>
+        <Button className="bg-yellow-500 text-lime-900 hover:bg-yellow-400 hover:text-lime-600 px-4 py-2 rounded-lg font-semibold" onClick={() => window.location.href = '/contacto'}>
           Contacta con nosotros
         </Button>
       ),
@@ -166,7 +166,7 @@ const Servicios = () => {
       ),
       imagenes: ['/src/assets/images/premios.jpg'],
       boton: (
-        <Button className="bg-yellow-500 text-lime-900 hover:bg-yellow-400 px-4 py-2 rounded-lg font-semibold" onClick={() => window.location.href = '/eventos'}>
+        <Button className="bg-yellow-500 text-lime-900 hover:bg-yellow-400 hover:text-lime-600 px-4 py-2 rounded-lg font-semibold" onClick={() => window.location.href = '/eventos'}>
           Ver próximos eventos
         </Button>
       ),
