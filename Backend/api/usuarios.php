@@ -136,4 +136,143 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(array('success' => false, 'error' => 'Datos incompletos. Nombre, email y password son obligatorios'));
     }
 }
+
+// Método para actualizar usuario (perfil)
+if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+    // Obtener los datos enviados
+    $data = json_decode(file_get_contents("php://input"));
+    
+    // Verificar que existan los datos necesarios
+    if (!empty($data->id) && !empty($data->nombre) && !empty($data->email)) {
+        
+        // Verificar si el usuario existe
+        $checkUser = "SELECT id FROM usuarios WHERE id = ?";
+        $stmtCheck = $conn->prepare($checkUser);
+        $stmtCheck->bind_param("i", $data->id);
+        $stmtCheck->execute();
+        $resultCheck = $stmtCheck->get_result();
+        
+        if ($resultCheck->num_rows === 0) {
+            http_response_code(404);
+            echo json_encode(array('success' => false, 'error' => 'Usuario no encontrado'));
+            exit;
+        }
+        
+        // Verificar si el email ya existe para otro usuario
+        $checkEmail = "SELECT id FROM usuarios WHERE email = ? AND id != ?";
+        $stmtEmail = $conn->prepare($checkEmail);
+        $stmtEmail->bind_param("si", $data->email, $data->id);
+        $stmtEmail->execute();
+        $resultEmail = $stmtEmail->get_result();
+        
+        if ($resultEmail->num_rows > 0) {
+            http_response_code(400);
+            echo json_encode(array('success' => false, 'error' => 'El email ya está registrado para otro usuario'));
+            exit;
+        }
+        
+        // Construir la consulta según los datos proporcionados
+        $updateFields = array();
+        $bindTypes = "";
+        $bindValues = array();
+        
+        // Añadir campos a actualizar
+        if (!empty($data->nombre)) {
+            $updateFields[] = "nombre = ?";
+            $bindTypes .= "s";
+            $bindValues[] = $data->nombre;
+        }
+        
+        if (!empty($data->email)) {
+            $updateFields[] = "email = ?";
+            $bindTypes .= "s";
+            $bindValues[] = $data->email;
+        }
+        
+        if (!empty($data->telefono)) {
+            $updateFields[] = "telefono = ?";
+            $bindTypes .= "s";
+            $bindValues[] = $data->telefono;
+        }
+        
+        if (!empty($data->direccion)) {
+            $updateFields[] = "direccion = ?";
+            $bindTypes .= "s";
+            $bindValues[] = $data->direccion;
+        }
+        
+        if (!empty($data->fecha_nacimiento)) {
+            $updateFields[] = "fecha_nacimiento = ?";
+            $bindTypes .= "s";
+            $bindValues[] = $data->fecha_nacimiento;
+        }
+        
+        // Actualizar contraseña solo si se proporcionó
+        if (!empty($data->password)) {
+            $updateFields[] = "password = ?";
+            $bindTypes .= "s";
+            $bindValues[] = $data->password;
+        }
+        
+        // Preparar la consulta si hay campos para actualizar
+        if (!empty($updateFields)) {
+            $query = "UPDATE usuarios SET " . implode(", ", $updateFields) . " WHERE id = ?";
+            $bindTypes .= "i";
+            $bindValues[] = $data->id;
+            
+            $stmt = $conn->prepare($query);
+            
+            // Usar reflection para hacer bind_param con un array de valores
+            $bindValuesRef = array();
+            $bindValuesRef[] = &$bindTypes;
+            foreach($bindValues as $key => $value) {
+                $bindValuesRef[] = &$bindValues[$key];
+            }
+            
+            call_user_func_array(array($stmt, 'bind_param'), $bindValuesRef);
+            
+            if ($stmt->execute()) {
+                // Obtener el usuario actualizado
+                $query = "SELECT u.id, u.nombre, u.email, u.telefono, u.direccion, u.fecha_nacimiento, r.nombre as rol, u.fecha_registro 
+                          FROM usuarios u 
+                          JOIN roles r ON u.rol_id = r.id
+                          WHERE u.id = ?";
+                
+                $stmt = $conn->prepare($query);
+                $stmt->bind_param("i", $data->id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                
+                if ($result->num_rows > 0) {
+                    $row = $result->fetch_assoc();
+                    
+                    $usuario = array(
+                        'id' => $row['id'],
+                        'nombre' => $row['nombre'],
+                        'email' => $row['email'],
+                        'telefono' => $row['telefono'],
+                        'direccion' => $row['direccion'],
+                        'fecha_nacimiento' => $row['fecha_nacimiento'],
+                        'rol' => $row['rol'],
+                        'fechaRegistro' => $row['fecha_registro']
+                    );
+                    
+                    echo json_encode(array('success' => true, 'usuario' => $usuario));
+                } else {
+                    http_response_code(500);
+                    echo json_encode(array('success' => false, 'error' => 'Error al obtener el usuario actualizado'));
+                }
+            } else {
+                http_response_code(500);
+                echo json_encode(array('success' => false, 'error' => 'Error al actualizar el usuario: ' . $stmt->error));
+            }
+        } else {
+            http_response_code(400);
+            echo json_encode(array('success' => false, 'error' => 'No se proporcionaron campos para actualizar'));
+        }
+    } else {
+        http_response_code(400);
+        echo json_encode(array('success' => false, 'error' => 'Datos incompletos. ID, nombre y email son obligatorios'));
+    }
+}
 ?>

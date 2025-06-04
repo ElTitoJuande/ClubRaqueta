@@ -39,27 +39,22 @@ API.interceptors.response.use(
  */
 export const loginUsuario = async (email, password) => {
   try {
-    // Usar el endpoint login.php en la raíz del proyecto que tiene encabezados CORS correctos
-    const response = await fetch('http://localhost/ClubRaqueta/login.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    });
+    // Usar la instancia API configurada en lugar de fetch directo
+    const response = await API.post('login.php', { email, password });
+    console.log('Respuesta del servidor:', response.data);
     
-    const data = await response.json();
-    console.log('Respuesta del servidor:', data);
-    
-    if (data && data.success && data.usuario) {
-      return data.usuario;
+    if (response.data && response.data.success && response.data.usuario) {
+      return response.data.usuario;
     } else {
-      throw data || { error: 'Error al iniciar sesión' };
+      throw response.data || { error: 'Error al iniciar sesión' };
     }
   } catch (error) {
     console.error('Error completo:', error);
     if (error.response && error.response.data) {
       throw error.response.data;
+    } else if (error.message === 'Network Error') {
+      console.error('Error de red al conectar con el servidor');
+      throw { success: false, error: 'Error de conexión con el servidor. Verifica tu conexión a internet y que el servidor esté activo.' };
     } else if (error.error) {
       throw error;
     } else {
