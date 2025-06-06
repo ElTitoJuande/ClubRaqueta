@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext } from 'react';
-import { loginUsuario, guardarUsuario, obtenerUsuario, cerrarSesion } from '../services/api';
+import { loginUsuario, guardarUsuario, obtenerUsuario, cerrarSesion, actualizarPerfil } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -45,10 +45,54 @@ export const AuthProvider = ({ children }) => {
     return false;
   };
 
+  const actualizarUsuario = async (datosUsuario) => {
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      // Asegurar que el ID del usuario está incluido en los datos
+      const datosCompletos = { ...datosUsuario, id: usuario.id };
+      console.log('Enviando datos para actualizar:', datosCompletos);
+      
+      const response = await actualizarPerfil(datosCompletos);
+      console.log('Respuesta completa de actualizarPerfil:', response);
+      
+      if (response && response.success) {
+        // Actualizar el estado del usuario y guardarlo en localStorage
+        // Usar los datos devueltos por el servidor o los datos enviados si no hay datos devueltos
+        const usuarioActualizado = { 
+          ...usuario, 
+          ...datosUsuario,
+          // Si hay datos de usuario en la respuesta, usarlos también
+          ...(response.usuario ? response.usuario : {})
+        };
+        
+        console.log('Usuario actualizado:', usuarioActualizado);
+        setUsuario(usuarioActualizado);
+        guardarUsuario(usuarioActualizado);
+        setIsLoading(false);
+        return { success: true, message: 'Perfil actualizado correctamente' };
+      } else {
+        setIsLoading(false);
+        const mensajeError = response && response.error ? response.error : 'Error al actualizar el perfil';
+        setError(mensajeError);
+        console.error('Error en la respuesta:', response);
+        return { success: false, message: mensajeError };
+      }
+    } catch (err) {
+      setIsLoading(false);
+      const mensajeError = err && err.error ? err.error : 'Error al actualizar el perfil';
+      setError(mensajeError);
+      console.error('Error completo al actualizar perfil:', err);
+      return { success: false, message: mensajeError };
+    }
+  };
+
   const value = {
     usuario,
     login,
     logout,
+    actualizarUsuario,
     puedeReservar,
     isLoading,
     error

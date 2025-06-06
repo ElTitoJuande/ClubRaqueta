@@ -2,7 +2,17 @@
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json; charset=UTF-8');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+// Permitir credenciales en solicitudes CORS
+header('Access-Control-Allow-Credentials: true');
+// Aumentamos el max age para evitar preflight repetitivos
+header('Access-Control-Max-Age: 86400'); // 24 horas
+
+// Registrar información para depuración
+error_log('REQUEST_METHOD: ' . $_SERVER['REQUEST_METHOD']);
+error_log('REQUEST_URI: ' . $_SERVER['REQUEST_URI']);
+error_log('CONTENT_TYPE: ' . (isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : 'no content type'));
+error_log('HTTP_CONTENT_TYPE: ' . (isset($_SERVER['HTTP_CONTENT_TYPE']) ? $_SERVER['HTTP_CONTENT_TYPE'] : 'no http content type'));
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -138,9 +148,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Método para actualizar usuario (perfil)
-if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
-    // Obtener los datos enviados
-    $data = json_decode(file_get_contents("php://input"));
+// Detectar tanto PUT directo como POST con _method=PUT (para compatibilidad con navegadores/servidores que no soportan PUT directamente)
+$isPut = $_SERVER['REQUEST_METHOD'] === 'PUT' || ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_method']) && $_POST['_method'] === 'PUT');
+
+if ($isPut) {
+    // Registrar el cuerpo de la solicitud para depuración
+    $rawInput = file_get_contents("php://input");
+    error_log('DATOS RAW RECIBIDOS: ' . $rawInput);
+    
+    // Intentar decodificar los datos como JSON
+    $data = json_decode($rawInput);
+    
+    // Si no es JSON válido, intentar obtener los datos desde $_POST
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        error_log('ERROR AL DECODIFICAR JSON: ' . json_last_error_msg());
+        error_log('INTENTANDO OBTENER DATOS DE POST');
+        
+        // Si hay datos POST disponibles, usarlos
+        if (!empty($_POST)) {
+            $data = (object)$_POST;
+            error_log('DATOS POST: ' . print_r($data, true));
+        }
+    } else {
+        error_log('DATOS JSON DECODIFICADOS: ' . print_r($data, true));
+    }
     
     // Verificar que existan los datos necesarios
     if (!empty($data->id) && !empty($data->nombre) && !empty($data->email)) {

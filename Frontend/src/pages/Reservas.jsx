@@ -17,7 +17,7 @@ const Reservas = () => {
   const [error, setError] = useState('');
   const [misReservas, setMisReservas] = useState([]);
   const [todasLasReservas, setTodasLasReservas] = useState([]);
-  const [mostrarPasadas, setMostrarPasadas] = useState(false);
+  const [mostrarTodasReservas, setMostrarTodasReservas] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [cargandoInstalaciones, setCargandoInstalaciones] = useState(true);
 
@@ -111,35 +111,41 @@ const Reservas = () => {
           // Guardar todas las reservas
           setTodasLasReservas(reservasNormalizadas);
           
-          // Filtrar reservas pasadas para mostrar solo las vigentes por defecto
-          const fechaActual = new Date();
-          const reservasVigentes = reservasNormalizadas.filter(reserva => {
-            // Convertir la fecha de la reserva a objeto Date
-            const fechaReserva = new Date(reserva.fecha);
-            
-            // Si la fecha es anterior a hoy, la reserva ya pasó
-            if (fechaReserva.toDateString() < fechaActual.toDateString()) {
-              return false;
-            }
-            
-            // Si es la fecha actual, comprobar la hora
-            if (fechaReserva.toDateString() === fechaActual.toDateString()) {
-              const [horasFin, minutosFin] = reserva.horaFin.split(':').map(Number);
+          // Por defecto, mostrar reservas según el estado del toggle
+          if (mostrarTodasReservas) {
+            // Si el toggle está en "Ocultar pasadas", mostrar todas las reservas
+            setMisReservas(reservasNormalizadas);
+          } else {
+            // Si el toggle está en "Mostrar todas", filtrar para mostrar solo vigentes y futuras
+            const fechaActual = new Date();
+            const reservasVigentes = reservasNormalizadas.filter(reserva => {
+              // Convertir la fecha de la reserva a objeto Date
+              const fechaReserva = new Date(reserva.fecha);
               
-              // Crear objeto Date con la hora de fin de la reserva
-              const horaFinReserva = new Date();
-              horaFinReserva.setHours(horasFin, minutosFin, 0);
+              // Si la fecha es anterior a hoy, la reserva ya pasó
+              if (fechaReserva.toDateString() < fechaActual.toDateString()) {
+                return false;
+              }
               
-              // Si la hora de fin ya pasó, no mostrar la reserva
-              return horaFinReserva > fechaActual;
-            }
+              // Si es la fecha actual, comprobar la hora
+              if (fechaReserva.toDateString() === fechaActual.toDateString()) {
+                const [horasFin, minutosFin] = reserva.horaFin.split(':').map(Number);
+                
+                // Crear objeto Date con la hora de fin de la reserva
+                const horaFinReserva = new Date();
+                horaFinReserva.setHours(horasFin, minutosFin, 0);
+                
+                // Si la hora de fin ya pasó, no mostrar la reserva
+                return horaFinReserva > fechaActual;
+              }
+              
+              // Si la fecha es posterior a hoy, la reserva está vigente
+              return true;
+            });
             
-            // Si la fecha es posterior a hoy, la reserva está vigente
-            return true;
-          });
-          
-          // Mostrar reservas vigentes por defecto
-          setMisReservas(reservasVigentes);
+            // Mostrar solo reservas vigentes cuando el toggle está en "Mostrar todas"
+            setMisReservas(reservasVigentes);
+          }
           setError('');
         } catch (err) {
           console.error('Error al cargar reservas:', err);
@@ -189,9 +195,12 @@ const Reservas = () => {
   };
 
   // Toggle para mostrar/ocultar reservas pasadas
-  const toggleMostrarPasadas = () => {
-    if (mostrarPasadas) {
-      // Filtrar para mostrar solo reservas vigentes
+  const toggleMostrarTodasReservas = () => {
+    if (mostrarTodasReservas) {
+      // Mostrar todas las reservas (incluyendo pasadas)
+      setMisReservas(todasLasReservas);
+    } else {
+      // Filtrar para mostrar solo reservas vigentes y futuras (ocultar pasadas)
       const fechaActual = new Date();
       const reservasVigentes = todasLasReservas.filter(reserva => {
         const fechaReserva = new Date(reserva.fecha);
@@ -207,11 +216,8 @@ const Reservas = () => {
         return true;
       });
       setMisReservas(reservasVigentes);
-    } else {
-      // Mostrar todas las reservas
-      setMisReservas(todasLasReservas);
     }
-    setMostrarPasadas(!mostrarPasadas);
+    setMostrarTodasReservas(!mostrarTodasReservas);
   };
   
   const confirmarReserva = async () => {
@@ -233,8 +239,9 @@ const Reservas = () => {
         const reservasActualizadas = await obtenerReservas(usuario.id);
         setTodasLasReservas(reservasActualizadas);
         
-        // Aplicar el filtro de reservas vigentes si está activado
-        if (!mostrarPasadas) {
+        // Aplicar el filtro según el estado actual
+        if (!mostrarTodasReservas) {
+          // Ocultar reservas pasadas (mostrar solo vigentes y futuras)
           const fechaActual = new Date();
           const reservasVigentes = reservasActualizadas.filter(reserva => {
             const fechaReserva = new Date(reserva.fecha);
@@ -249,6 +256,7 @@ const Reservas = () => {
           });
           setMisReservas(reservasVigentes);
         } else {
+          // Mostrar todas las reservas (incluyendo pasadas)
           setMisReservas(reservasActualizadas);
         }
         
@@ -278,7 +286,8 @@ const Reservas = () => {
         setTodasLasReservas(reservasActualizadas);
         
         // Aplicar el filtro según el estado actual
-        if (!mostrarPasadas) {
+        if (!mostrarTodasReservas) {
+          // Ocultar reservas pasadas (mostrar solo vigentes y futuras)
           const fechaActual = new Date();
           const reservasVigentes = reservasActualizadas.filter(reserva => {
             const fechaReserva = new Date(reserva.fecha);
@@ -293,6 +302,7 @@ const Reservas = () => {
           });
           setMisReservas(reservasVigentes);
         } else {
+          // Mostrar todas las reservas (incluyendo pasadas)
           setMisReservas(reservasActualizadas);
         }
         
@@ -403,16 +413,16 @@ const Reservas = () => {
               {/* Toggle para mostrar reservas pasadas */}
               <div className="flex items-center">
                 <span className="mr-2 text-sm">
-                  {mostrarPasadas ? 'Mostrar todas' : 'Solo activas'}
+                  {mostrarTodasReservas ? 'Ocultar pasadas' : 'Mostrar todas'}
                 </span>
                 <button 
-                  onClick={toggleMostrarPasadas}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${mostrarPasadas ? 'bg-yellow-500' : 'bg-white/20'}`}
+                  onClick={toggleMostrarTodasReservas}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${mostrarTodasReservas ? 'bg-yellow-500' : 'bg-white/20'}`}
                   role="switch"
-                  aria-checked={mostrarPasadas}
+                  aria-checked={mostrarTodasReservas}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${mostrarPasadas ? 'translate-x-6' : 'translate-x-1'}`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${mostrarTodasReservas ? 'translate-x-6' : 'translate-x-1'}`}
                   />
                 </button>
               </div>

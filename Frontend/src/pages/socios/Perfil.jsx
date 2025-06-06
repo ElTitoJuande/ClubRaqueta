@@ -5,12 +5,14 @@ import { Link } from 'react-router-dom';
 const Perfil = () => {
   const { usuario, actualizarUsuario } = useAuth();
   const [formData, setFormData] = useState({
-    nombre: usuario.nombre,
-    email: usuario.email,
-    telefono: usuario.telefono,
-    direccion: usuario.direccion,
-    fechaNacimiento: usuario.fechaNacimiento
+    nombre: usuario.nombre || '',
+    email: usuario.email || '',
+    telefono: usuario.telefono || '',
+    direccion: usuario.direccion || '',
+    fechaNacimiento: usuario.fecha_nacimiento || usuario.fechaNacimiento || ''
   });
+
+  console.log('Usuario actual:', usuario);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
