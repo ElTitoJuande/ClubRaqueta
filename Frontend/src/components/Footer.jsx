@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from 'react-router-dom';
 import logo from '../assets/images/ClubRaqueta.png';
+import { FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
 
 const Footer = () => {
   return (
@@ -89,16 +90,33 @@ const Footer = () => {
             </div>
 
             <div className="flex space-x-4 mt-6">
-              {['facebook', 'instagram', 'twitter'].map((platform, index) => (
-                <a
-                  key={index}
-                  href="#"
-                  className="bg-lime-700 hover:bg-yellow-500 text-white hover:text-lime-900 p-3 rounded-full transition-all duration-300 transform hover:scale-110"
-                  aria-label={platform}
-                >
-                  <i className={`fab fa-${platform} text-xl`}></i>
-                </a>
-              ))}
+              <a
+                href="https://facebook.com/clubraquetarute"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-blue-600 p-3 rounded-full text-white hover:opacity-90 transition-opacity transform hover:scale-110"
+                aria-label="Facebook"
+              >
+                <FaFacebookF className="h-5 w-5" />
+              </a>
+              <a
+                href="https://instagram.com/clubraquetarute"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 p-3 rounded-full text-white hover:opacity-90 transition-opacity transform hover:scale-110"
+                aria-label="Instagram"
+              >
+                <FaInstagram className="h-5 w-5" />
+              </a>
+              <a
+                href="https://twitter.com/clubraquetarute"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-blue-400 p-3 rounded-full text-white hover:opacity-90 transition-opacity transform hover:scale-110"
+                aria-label="Twitter"
+              >
+                <FaTwitter className="h-5 w-5" />
+              </a>
             </div>
           </div>
         </div>

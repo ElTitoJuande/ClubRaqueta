@@ -75,6 +75,25 @@ export const registrarUsuario = async (userData) => {
   }
 };
 
+// Función para actualizar un usuario existente
+export const actualizarUsuario = async (userData) => {
+  try {
+    const response = await fetch(`${API_URL}/usuarios.php`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error al actualizar usuario:', error);
+    return { success: false, error: 'Error en la conexión con el servidor' };
+  }
+};
+
 // =========================
 // FUNCIONES DE INSTALACIONES
 // =========================

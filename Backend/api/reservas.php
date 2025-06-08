@@ -41,12 +41,19 @@ $conn = $database->getConnection();
 
 // Método para obtener reservas (todas o por usuario)
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $usuario_id = isset($_GET['usuario_id']) ? intval($_GET['usuario_id']) : null;
+    $usuario_id = isset($_GET['usuario_id']) ? $_GET['usuario_id'] : null;
     
-    if ($usuario_id) {
+    // Comprobar si se pide todas las reservas ('all')
+    $obtener_todas = ($usuario_id === 'all');
+    
+    if ($usuario_id && !$obtener_todas) {
+        // Convertir a entero para consultas de usuario específico
+        $usuario_id = intval($usuario_id);
+        
         // Obtener reservas de un usuario específico
         $query = "SELECT r.id, r.usuario_id, r.instalacion_id, i.nombre as instalacion_nombre, 
-                  r.fecha, r.hora_inicio, r.hora_fin, r.fecha_creacion 
+                  r.fecha, r.hora_inicio, r.hora_fin, r.fecha_creacion,
+                  i.nombre as recurso
                   FROM reservas r
                   JOIN instalaciones i ON r.instalacion_id = i.id
                   WHERE r.usuario_id = ?
@@ -57,9 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $stmt->execute();
         $result = $stmt->get_result();
     } else {
-        // Obtener todas las reservas (solo para administradores)
+        // Obtener todas las reservas
         $query = "SELECT r.id, r.usuario_id, u.nombre as usuario_nombre, r.instalacion_id, 
-                  i.nombre as instalacion_nombre, r.fecha, r.hora_inicio, r.hora_fin, r.fecha_creacion 
+                  i.nombre as instalacion_nombre, r.fecha, r.hora_inicio, r.hora_fin, r.fecha_creacion,
+                  i.nombre as recurso
                   FROM reservas r
                   JOIN usuarios u ON r.usuario_id = u.id
                   JOIN instalaciones i ON r.instalacion_id = i.id
@@ -80,7 +88,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'fecha' => $row['fecha'],
                 'horaInicio' => $row['hora_inicio'],
                 'horaFin' => $row['hora_fin'],
-                'fechaCreacion' => $row['fecha_creacion']
+                'fechaCreacion' => $row['fecha_creacion'],
+                'recurso' => $row['recurso']
             );
             
             // Añadir nombre de usuario solo si es la consulta de todas las reservas

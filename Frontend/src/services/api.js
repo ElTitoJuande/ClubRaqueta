@@ -300,9 +300,7 @@ export const actualizarPerfil = async (datosUsuario) => {
       nombre: datosUsuario.nombre,
       email: datosUsuario.email,
       telefono: datosUsuario.telefono || '',
-      direccion: datosUsuario.direccion || '',
-      // Convertir fechaNacimiento a fecha_nacimiento
-      fecha_nacimiento: datosUsuario.fechaNacimiento || ''
+      dni: datosUsuario.dni || ''
     };
 
     console.log('Datos normalizados para enviar al backend:', datosNormalizados);

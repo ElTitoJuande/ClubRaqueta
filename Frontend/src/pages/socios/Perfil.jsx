@@ -8,11 +8,12 @@ const Perfil = () => {
     nombre: usuario.nombre || '',
     email: usuario.email || '',
     telefono: usuario.telefono || '',
-    direccion: usuario.direccion || '',
-    fechaNacimiento: usuario.fecha_nacimiento || usuario.fechaNacimiento || ''
+    dni: usuario.dni || ''
   });
 
   console.log('Usuario actual:', usuario);
+  console.log('DNI en usuario:', usuario?.dni);
+  console.log('FormData inicial:', formData);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -45,7 +46,13 @@ const Perfil = () => {
     <div className="min-h-screen bg-gradient-to-br from-lime-800 via-lime-700 to-lime-900">
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 mt-20">
-          <h1 className="text-3xl font-bold text-white mb-8">Mi Perfil</h1>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-white">Mi Perfil</h1>
+            <div className="bg-yellow-500/20 px-4 py-2 rounded-lg">
+              <span className="text-white font-medium">ID de Socio: </span>
+              <span className="text-white font-bold">{usuario.id}</span>
+            </div>
+          </div>
 
           {error && (
             <div className="bg-red-500/20 border border-red-500 text-white p-3 rounded-lg mb-4">
@@ -105,32 +112,21 @@ const Perfil = () => {
             </div>
 
             <div>
-              <label htmlFor="direccion" className="block text-white mb-2">
-                Dirección
+              <label htmlFor="dni" className="block text-white mb-2">
+                DNI
               </label>
               <input
                 type="text"
-                id="direccion"
-                name="direccion"
-                value={formData.direccion}
+                id="dni"
+                name="dni"
+                value={formData.dni}
                 onChange={handleChange}
                 className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-yellow-500"
+                placeholder="Ejemplo: 12345678X"
               />
             </div>
 
-            <div>
-              <label htmlFor="fechaNacimiento" className="block text-white mb-2">
-                Fecha de nacimiento
-              </label>
-              <input
-                type="date"
-                id="fechaNacimiento"
-                name="fechaNacimiento"
-                value={formData.fechaNacimiento}
-                onChange={handleChange}
-                className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-yellow-500"
-              />
-            </div>
+
 
             <button
               type="submit"

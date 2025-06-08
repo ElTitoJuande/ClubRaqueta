@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { format, addDays, startOfWeek } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useAuth } from '../contexts/AuthContext';
@@ -78,7 +78,7 @@ const Reservas = () => {
         
         setError('');
       } catch (err) {
-        console.error('Error al cargar instalaciones:', err);
+        // Error al cargar instalaciones
         setError('Error al cargar las instalaciones. Por favor, intenta nuevamente.');
       } finally {
         setCargandoInstalaciones(false);
@@ -88,67 +88,37 @@ const Reservas = () => {
     cargarInstalaciones();
   }, []);
   
-  // Cargar reservas del usuario cuando se monta el componente o cambia el usuario
+  // Función auxiliar para determinar si una reserva está activa o es futura
+  const esReservaActivaOFutura = (reserva) => {
+    // Fecha y hora actual
+    const ahora = new Date();
+    
+    // Combinar fecha de reserva con hora de finalización
+    const [horasFin, minutosFin, segundosFin = 0] = reserva.horaFin.split(':').map(Number);
+    
+    // Crear un objeto Date con la fecha y hora de finalización de la reserva
+    const fechaHoraFinReserva = new Date(reserva.fecha);
+    fechaHoraFinReserva.setHours(horasFin, minutosFin, segundosFin);
+    
+    // La reserva es activa o futura si su fecha/hora de finalización
+    // es igual o posterior a la fecha/hora actual
+    return fechaHoraFinReserva >= ahora;
+  };
+
+  // Definir las dependencias del efecto como una variable para evitar warning del linter
+  const actualizarReservasDeps = useMemo(() => {
+    return { usuarioId: usuario?.id, mostrarTodasReservas };
+  }, [usuario?.id, mostrarTodasReservas]);
+  
+  // Cargar reservas cuando se monta el componente o cambia el usuario o el toggle
   useEffect(() => {
     async function cargarReservas() {
       if (usuario && usuario.id) {
         setCargando(true);
         try {
-          const reservasUsuario = await obtenerReservas(usuario.id);
-          
-          // Normalizar los datos de las reservas para asegurar consistencia
-          const reservasNormalizadas = reservasUsuario.map(reserva => ({
-            id: reserva.id,
-            instalacionId: reserva.instalacionId || reserva.instalacion_id,
-            instalacionNombre: reserva.instalacionNombre || reserva.instalacion_nombre || reserva.instalacion,
-            fecha: reserva.fecha,
-            horaInicio: reserva.horaInicio || reserva.hora_inicio,
-            horaFin: reserva.horaFin || reserva.hora_fin,
-            recurso: reserva.recurso || reserva.instalacionRecurso,
-            usuarioId: reserva.usuarioId || reserva.usuario_id
-          }));
-          
-          // Guardar todas las reservas
-          setTodasLasReservas(reservasNormalizadas);
-          
-          // Por defecto, mostrar reservas según el estado del toggle
-          if (mostrarTodasReservas) {
-            // Si el toggle está en "Ocultar pasadas", mostrar todas las reservas
-            setMisReservas(reservasNormalizadas);
-          } else {
-            // Si el toggle está en "Mostrar todas", filtrar para mostrar solo vigentes y futuras
-            const fechaActual = new Date();
-            const reservasVigentes = reservasNormalizadas.filter(reserva => {
-              // Convertir la fecha de la reserva a objeto Date
-              const fechaReserva = new Date(reserva.fecha);
-              
-              // Si la fecha es anterior a hoy, la reserva ya pasó
-              if (fechaReserva.toDateString() < fechaActual.toDateString()) {
-                return false;
-              }
-              
-              // Si es la fecha actual, comprobar la hora
-              if (fechaReserva.toDateString() === fechaActual.toDateString()) {
-                const [horasFin, minutosFin] = reserva.horaFin.split(':').map(Number);
-                
-                // Crear objeto Date con la hora de fin de la reserva
-                const horaFinReserva = new Date();
-                horaFinReserva.setHours(horasFin, minutosFin, 0);
-                
-                // Si la hora de fin ya pasó, no mostrar la reserva
-                return horaFinReserva > fechaActual;
-              }
-              
-              // Si la fecha es posterior a hoy, la reserva está vigente
-              return true;
-            });
-            
-            // Mostrar solo reservas vigentes cuando el toggle está en "Mostrar todas"
-            setMisReservas(reservasVigentes);
-          }
+          await actualizarReservas();
           setError('');
         } catch (err) {
-          console.error('Error al cargar reservas:', err);
           setError('Error al cargar tus reservas. Por favor, intenta nuevamente.');
         } finally {
           setCargando(false);
@@ -157,24 +127,101 @@ const Reservas = () => {
     }
     
     cargarReservas();
-  }, [usuario]);
+    // Usamos el objeto memoizado como dependencia para controlar cuándo se debe ejecutar el efecto
+  }, [actualizarReservasDeps]);
 
-  const generarHoras = (instalacion) => {
-    if (!instalaciones[instalacion]) return [];
+  // Memoizamos generarHoras para evitar recálculos innecesarios
+  const generarHoras = useMemo(() => {
+    if (!instalaciones[instalacionSeleccionada]) return [];
     
     const horas = [];
-    const { horaInicio, horaFin, duracionReserva } = instalaciones[instalacion];
+    const { horaInicio, horaFin, duracionReserva } = instalaciones[instalacionSeleccionada];
     for (let hora = horaInicio; hora < horaFin; hora++) {
       for (let minuto = 0; minuto < 60; minuto += duracionReserva) {
         horas.push(`${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`);
       }
     }
     return horas;
+  }, [instalacionSeleccionada, instalaciones]);
+
+  // Memoizamos el cálculo de los días de la semana para que solo se recalcule cuando cambia semanaActual
+  const diasSemana = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => addDays(semanaActual, i));
+  }, [semanaActual]);
+
+  // Comprobar si una celda (día + hora) ya está reservada - OPTIMIZADO
+  const estaReservada = (dia, hora, recurso) => {
+    if (!todasLasReservas || !todasLasReservas.length) return false;
+    
+    // Convertir el día a formato yyyy-MM-dd para comparar con las reservas
+    const fechaFormateada = format(dia, 'yyyy-MM-dd');
+    
+    // Lógica simplificada: verificar fecha y hora
+    return todasLasReservas.some(reserva => 
+      reserva.fecha === fechaFormateada && reserva.horaInicio === hora
+    );
+  };
+  
+  // Función para comprobar si una reserva pertenece al usuario actual - OPTIMIZADO
+  const esReservaPropia = (dia, hora, recurso) => {
+    if (!todasLasReservas || !todasLasReservas.length || !usuario) return false;
+    
+    const fechaFormateada = format(dia, 'yyyy-MM-dd');
+    
+    // Verificar fecha, hora y el ID del usuario
+    return todasLasReservas.some(reserva => 
+      reserva.fecha === fechaFormateada && 
+      reserva.horaInicio === hora && 
+      parseInt(reserva.usuarioId) === parseInt(usuario.id)
+    );
+  };
+  
+  // Obtener info de la reserva para mostrarla en el tooltip - OPTIMIZADO
+  const getInfoReserva = (dia, hora, recurso) => {
+    if (!todasLasReservas?.length || !usuario) return '';
+    
+    const fechaFormateada = format(dia, 'yyyy-MM-dd');
+    const instalacionActual = instalaciones[instalacionSeleccionada]?.nombre || '';
+    
+    // Usamos find para buscar la primera reserva que coincida con los criterios
+    const reserva = todasLasReservas.find(r => 
+      r.fecha === fechaFormateada && 
+      r.horaInicio === hora && 
+      r.recurso === recurso && 
+      r.instalacionNombre === instalacionActual
+    );
+    
+    // Devolvemos información dependiendo de si la reserva existe y si es del usuario actual
+    return reserva 
+      ? (parseInt(reserva.usuarioId) === parseInt(usuario.id) ? 'Tu reserva' : 'Reservado') 
+      : '';
+  };
+  
+  // Comprobar si una celda (día + hora) es del pasado - OPTIMIZADO
+  const esHoraPasada = (dia, hora) => {
+    const ahora = new Date();
+    const fechaHora = new Date(dia);
+    
+    // Extraer horas y minutos como números directamente
+    const [h, m] = hora.split(':').map(Number);
+    fechaHora.setHours(h, m, 0);
+    
+    // Es del pasado si la fecha/hora es anterior a la actual
+    return fechaHora < ahora;
   };
 
-  const diasSemana = Array.from({ length: 7 }, (_, i) => addDays(semanaActual, i));
-
   const handleReservaClick = (dia, hora, recurso) => {
+    // No permitir reservas de horas pasadas o ya reservadas
+    if (esHoraPasada(dia, hora)) {
+      setError('No se pueden reservar horas pasadas');
+      return;
+    }
+    
+    if (estaReservada(dia, hora, recurso)) {
+      setError('Esta hora ya está reservada');
+      return;
+    }
+    
     if (!usuario) {
       setError('Debes iniciar sesión para hacer una reserva');
       return;
@@ -193,35 +240,53 @@ const Reservas = () => {
       usuarioId: usuario.id
     });
   };
-
+  
   // Toggle para mostrar/ocultar reservas pasadas
-  const toggleMostrarTodasReservas = () => {
-    if (mostrarTodasReservas) {
-      // Mostrar todas las reservas (incluyendo pasadas)
-      setMisReservas(todasLasReservas);
-    } else {
-      // Filtrar para mostrar solo reservas vigentes y futuras (ocultar pasadas)
-      const fechaActual = new Date();
-      const reservasVigentes = todasLasReservas.filter(reserva => {
-        const fechaReserva = new Date(reserva.fecha);
-        if (fechaReserva.toDateString() < fechaActual.toDateString()) {
-          return false;
-        }
-        if (fechaReserva.toDateString() === fechaActual.toDateString()) {
-          const [horasFin, minutosFin] = reserva.horaFin.split(':').map(Number);
-          const horaFinReserva = new Date();
-          horaFinReserva.setHours(horasFin, minutosFin, 0);
-          return horaFinReserva > fechaActual;
-        }
-        return true;
-      });
-      setMisReservas(reservasVigentes);
-    }
-    setMostrarTodasReservas(!mostrarTodasReservas);
+  const toggleMostrarTodasReservas = async () => {
+    const nuevoEstado = !mostrarTodasReservas;
+    // Actualizar el estado primero para que el efecto async use el valor correcto
+    setMostrarTodasReservas(nuevoEstado);
+    
+    // Las reservas se actualizarán automáticamente por el useEffect que depende de mostrarTodasReservas
   };
   
+  // Función para normalizar datos de reserva
+  const normalizarReserva = (reserva) => ({
+    id: reserva.id,
+    instalacionId: reserva.instalacionId || reserva.instalacion_id,
+    instalacionNombre: reserva.instalacionNombre || reserva.instalacion_nombre || reserva.instalacion,
+    fecha: reserva.fecha,
+    horaInicio: reserva.horaInicio || reserva.hora_inicio,
+    horaFin: reserva.horaFin || reserva.hora_fin,
+    recurso: reserva.recurso || reserva.instalacionRecurso || reserva.instalacionNombre,
+    usuarioId: reserva.usuarioId || reserva.usuario_id
+  });
+
+  // Función auxiliar para actualizar las reservas después de una operación
+  const actualizarReservas = async () => {
+    // Cargar todas las reservas del sistema para la ocupación
+    const todasReservasRespuesta = await obtenerReservas('all');
+    const todasNormalizadas = todasReservasRespuesta.map(normalizarReserva);
+    
+    // Guardar todas las reservas para mostrar ocupación
+    setTodasLasReservas(todasNormalizadas);
+    
+    // Cargar las reservas del usuario actual
+    const misReservasRespuesta = await obtenerReservas(usuario.id);
+    const misReservasNormalizadas = misReservasRespuesta.map(normalizarReserva);
+    
+    // Aplicar el filtro según el estado actual del toggle
+    const reservasFiltradas = mostrarTodasReservas ? 
+      misReservasNormalizadas : 
+      misReservasNormalizadas.filter(esReservaActivaOFutura);
+    
+    setMisReservas(reservasFiltradas);
+  };
+
   const confirmarReserva = async () => {
     setCargando(true);
+    setError(''); // Limpiar error previo
+    
     try {
       // Mapear los datos al formato que espera el backend
       const datosReserva = {
@@ -235,39 +300,13 @@ const Reservas = () => {
       const resultado = await crearReserva(datosReserva);
       
       if (resultado.success) {
-        // Recargar las reservas desde el servidor para tener los datos actualizados
-        const reservasActualizadas = await obtenerReservas(usuario.id);
-        setTodasLasReservas(reservasActualizadas);
-        
-        // Aplicar el filtro según el estado actual
-        if (!mostrarTodasReservas) {
-          // Ocultar reservas pasadas (mostrar solo vigentes y futuras)
-          const fechaActual = new Date();
-          const reservasVigentes = reservasActualizadas.filter(reserva => {
-            const fechaReserva = new Date(reserva.fecha);
-            if (fechaReserva.toDateString() < fechaActual.toDateString()) return false;
-            if (fechaReserva.toDateString() === fechaActual.toDateString()) {
-              const [horasFin, minutosFin] = reserva.horaFin.split(':').map(Number);
-              const horaFinReserva = new Date();
-              horaFinReserva.setHours(horasFin, minutosFin, 0);
-              return horaFinReserva > fechaActual;
-            }
-            return true;
-          });
-          setMisReservas(reservasVigentes);
-        } else {
-          // Mostrar todas las reservas (incluyendo pasadas)
-          setMisReservas(reservasActualizadas);
-        }
-        
+        await actualizarReservas();
         setReservaActual(null);
-        setError('');
       } else {
         setError(resultado.error || 'Error al crear la reserva');
       }
     } catch (err) {
-      console.error('Error al confirmar reserva:', err);
-      setError(err.error || 'Error al crear la reserva. Por favor, intenta nuevamente.');
+      setError(err.message || 'Error al crear la reserva. Por favor, intenta nuevamente.');
     } finally {
       setCargando(false);
     }
@@ -275,44 +314,19 @@ const Reservas = () => {
 
   const handleCancelarReserva = async (reservaId) => {
     setCargando(true);
+    setError(''); // Limpiar error previo
+    
     try {
-      // Pasamos el ID del usuario y si es admin como parámetros adicionales
       const esAdmin = usuario && usuario.rol === 'ADMIN';
       const resultado = await cancelarReserva(reservaId, usuario.id, esAdmin);
       
       if (resultado && resultado.success) {
-        // Recargar las reservas desde el servidor para tener datos actualizados
-        const reservasActualizadas = await obtenerReservas(usuario.id);
-        setTodasLasReservas(reservasActualizadas);
-        
-        // Aplicar el filtro según el estado actual
-        if (!mostrarTodasReservas) {
-          // Ocultar reservas pasadas (mostrar solo vigentes y futuras)
-          const fechaActual = new Date();
-          const reservasVigentes = reservasActualizadas.filter(reserva => {
-            const fechaReserva = new Date(reserva.fecha);
-            if (fechaReserva.toDateString() < fechaActual.toDateString()) return false;
-            if (fechaReserva.toDateString() === fechaActual.toDateString()) {
-              const [horasFin, minutosFin] = reserva.horaFin.split(':').map(Number);
-              const horaFinReserva = new Date();
-              horaFinReserva.setHours(horasFin, minutosFin, 0);
-              return horaFinReserva > fechaActual;
-            }
-            return true;
-          });
-          setMisReservas(reservasVigentes);
-        } else {
-          // Mostrar todas las reservas (incluyendo pasadas)
-          setMisReservas(reservasActualizadas);
-        }
-        
-        setError('');
+        await actualizarReservas();
       } else {
         setError((resultado && resultado.error) || 'Error al cancelar la reserva');
       }
     } catch (err) {
-      console.error('Error al cancelar reserva:', err);
-      setError((err && err.error) || 'Error al cancelar la reserva. Por favor, intenta nuevamente.');
+      setError(err.message || 'Error al cancelar la reserva. Por favor, intenta nuevamente.');
     } finally {
       setCargando(false);
     }
@@ -413,7 +427,7 @@ const Reservas = () => {
               {/* Toggle para mostrar reservas pasadas */}
               <div className="flex items-center">
                 <span className="mr-2 text-sm">
-                  {mostrarTodasReservas ? 'Ocultar pasadas' : 'Mostrar todas'}
+                  {mostrarTodasReservas ? 'Todas las reservas' : 'Solo activas/futuras'}
                 </span>
                 <button 
                   onClick={toggleMostrarTodasReservas}
@@ -463,24 +477,69 @@ const Reservas = () => {
             {/* Cuadrícula de reservas */}
             {instalacionSeleccionada && instalaciones[instalacionSeleccionada] && (
               <div className="space-y-1">
-                {generarHoras(instalacionSeleccionada).map((hora) => (
+                {generarHoras.map((hora) => (
                   <div key={hora} className="grid grid-cols-8 gap-2">
                     <div className="p-2 font-medium">{hora}</div>
                     {diasSemana.map((dia) => (
                       <div key={`${dia}-${hora}`} className="grid gap-1">
-                        {instalaciones[instalacionSeleccionada].recursos.map((recurso) => (
-                          <button
-                            key={`${dia}-${hora}-${recurso}`}
-                            onClick={() => handleReservaClick(dia, hora, recurso)}
-                            disabled={!puedeReservar(instalacionSeleccionada)}
-                            className={`p-2 text-sm rounded transition-colors text-center ${puedeReservar(instalacionSeleccionada)
-                                ? 'bg-white/10 hover:bg-white/20'
-                                : 'bg-white/5 cursor-not-allowed'
-                              }`}
-                          >
-                            {recurso}
-                          </button>
-                        ))}
+                        {instalaciones[instalacionSeleccionada].recursos.map((recurso) => {
+                          // Verifica si esta celda está reservada - VERSIÓN SIMPLIFICADA
+                          const fechaFormateada = format(dia, 'yyyy-MM-dd');
+                          const estaOcupada = todasLasReservas ? todasLasReservas.some(r => 
+                            r.fecha === fechaFormateada && r.horaInicio === hora
+                          ) : false;
+                          
+                          // Verifica si la reserva es del usuario actual
+                          const esMiReserva = todasLasReservas && usuario ? todasLasReservas.some(r => 
+                            r.fecha === fechaFormateada && 
+                            r.horaInicio === hora && 
+                            parseInt(r.usuarioId) === parseInt(usuario.id)
+                          ) : false;
+                          
+                          // Las celdas con horarios pasados se muestran atenuadas
+                          const horaPasada = esHoraPasada(dia, hora);
+                          
+                          return (
+                            <button
+                              key={`${dia}-${hora}-${recurso}`}
+                              onClick={() => handleReservaClick(dia, hora, recurso)}
+                              disabled={!puedeReservar(instalacionSeleccionada) || horaPasada || estaOcupada}
+                              className={`
+                                relative p-2 text-sm rounded transition-colors text-center 
+                                ${horaPasada ? 'opacity-50 bg-gray-700' : ''}
+                                ${!horaPasada && estaOcupada 
+                                  ? esMiReserva 
+                                    ? 'bg-green-700 border-2 border-green-400' /* Mi reserva */
+                                    : 'bg-red-700 border-2 border-red-400' /* Reservada por otro */
+                                  : 'bg-white/10 hover:bg-white/20' /* Disponible */}
+                                ${!puedeReservar(instalacionSeleccionada) ? 'bg-white/5 cursor-not-allowed' : ''}
+                              `}
+                              title={
+                                horaPasada
+                                  ? 'Hora pasada'
+                                  : estaOcupada
+                                    ? esMiReserva ? 'Tu reserva' : 'Reservado'
+                                    : 'Disponible'
+                              }
+                            >
+                              {/* Contenido del botón */}
+                              <div className={`${estaOcupada && !horaPasada ? 'text-white font-bold' : ''}`}>
+                                {recurso}
+                                
+                                {/* Decoración visual para horas ocupadas */}
+                                {estaOcupada && !horaPasada && (
+                                  <div className="mt-1 flex items-center justify-center">
+                                    {esMiReserva ? (
+                                      <span className="text-xs px-1.5 py-0.5 bg-green-500 text-white rounded-full">TU</span>
+                                    ) : (
+                                      <span className="text-xs px-1.5 py-0.5 bg-red-500 text-white rounded-full">OCUPADO</span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     ))}
                   </div>

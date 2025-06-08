@@ -28,7 +28,7 @@ $conn = $database->getConnection();
 
 // Método para obtener todos los usuarios
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $query = "SELECT u.id, u.nombre, u.email, u.telefono, r.nombre as rol, u.fecha_registro 
+    $query = "SELECT u.id, u.nombre, u.email, u.dni, u.telefono, r.nombre as rol, u.fecha_registro 
               FROM usuarios u 
               JOIN roles r ON u.rol_id = r.id";
     
@@ -45,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'id' => $row['id'],
                 'nombre' => $row['nombre'],
                 'email' => $row['email'],
+                'dni' => $row['dni'],
                 'telefono' => $row['telefono'],
                 'rol' => $rolId,
                 'fechaRegistro' => $row['fecha_registro']
@@ -66,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
     
     // Verificar que existan los datos necesarios
-    if (!empty($data->nombre) && !empty($data->email) && !empty($data->password)) {
+    if (!empty($data->nombre) && !empty($data->email) && !empty($data->dni) && !empty($data->password)) {
         
         // Obtener el ID del rol basado en su nombre
         $rolQuery = "SELECT id FROM roles WHERE nombre = ?";
@@ -83,28 +84,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $rol = $result->fetch_assoc();
             $rolId = $rol['id'];
             
-            // Verificar si el email ya existe
+            // Verificar si el email o DNI ya existen
             $checkEmail = "SELECT id FROM usuarios WHERE email = ?";
             $stmtCheck = $conn->prepare($checkEmail);
             $stmtCheck->bind_param("s", $data->email);
             $stmtCheck->execute();
             $resultCheck = $stmtCheck->get_result();
             
+            $checkDNI = "SELECT id FROM usuarios WHERE dni = ?";
+            $stmtCheckDNI = $conn->prepare($checkDNI);
+            $stmtCheckDNI->bind_param("s", $data->dni);
+            $stmtCheckDNI->execute();
+            $resultCheckDNI = $stmtCheckDNI->get_result();
+            
             if ($resultCheck->num_rows > 0) {
                 http_response_code(400);
                 echo json_encode(array('success' => false, 'error' => 'El email ya está registrado'));
+            } else if ($resultCheckDNI->num_rows > 0) {
+                http_response_code(400);
+                echo json_encode(array('success' => false, 'error' => 'El DNI ya está registrado'));
             } else {
                 // Insertar el nuevo usuario
-                $query = "INSERT INTO usuarios (nombre, email, password, telefono, rol_id) VALUES (?, ?, ?, ?, ?)";
+                $query = "INSERT INTO usuarios (nombre, email, dni, password, telefono, rol_id) VALUES (?, ?, ?, ?, ?, ?)";
                 
                 $stmt = $conn->prepare($query);
-                $stmt->bind_param("ssssi", $data->nombre, $data->email, $data->password, $data->telefono, $rolId);
+                $stmt->bind_param("sssssi", $data->nombre, $data->email, $data->dni, $data->password, $data->telefono, $rolId);
                 
                 if ($stmt->execute()) {
                     $usuarioId = $stmt->insert_id;
                     
                     // Obtener el usuario recién creado
-                    $query = "SELECT u.id, u.nombre, u.email, u.telefono, r.nombre as rol, u.fecha_registro 
+                    $query = "SELECT u.id, u.nombre, u.email, u.dni, u.telefono, r.nombre as rol, u.fecha_registro 
                               FROM usuarios u 
                               JOIN roles r ON u.rol_id = r.id
                               WHERE u.id = ?";
@@ -121,6 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             'id' => $row['id'],
                             'nombre' => $row['nombre'],
                             'email' => $row['email'],
+                            'dni' => $row['dni'],
                             'telefono' => $row['telefono'],
                             'rol' => $row['rol'],
                             'fechaRegistro' => $row['fecha_registro']
@@ -143,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } else {
         http_response_code(400);
-        echo json_encode(array('success' => false, 'error' => 'Datos incompletos. Nombre, email y password son obligatorios'));
+        echo json_encode(array('success' => false, 'error' => 'Datos incompletos. Nombre, email, DNI y password son obligatorios'));
     }
 }
 
@@ -202,6 +213,21 @@ if ($isPut) {
             exit;
         }
         
+        // Verificar si el DNI ya existe para otro usuario
+        if (!empty($data->dni)) {
+            $checkDNI = "SELECT id FROM usuarios WHERE dni = ? AND id != ?";
+            $stmtDNI = $conn->prepare($checkDNI);
+            $stmtDNI->bind_param("si", $data->dni, $data->id);
+            $stmtDNI->execute();
+            $resultDNI = $stmtDNI->get_result();
+            
+            if ($resultDNI->num_rows > 0) {
+                http_response_code(400);
+                echo json_encode(array('success' => false, 'error' => 'El DNI ya está registrado para otro usuario'));
+                exit;
+            }
+        }
+        
         // Construir la consulta según los datos proporcionados
         $updateFields = array();
         $bindTypes = "";
@@ -226,10 +252,10 @@ if ($isPut) {
             $bindValues[] = $data->telefono;
         }
         
-        if (!empty($data->direccion)) {
-            $updateFields[] = "direccion = ?";
+        if (!empty($data->dni)) {
+            $updateFields[] = "dni = ?";
             $bindTypes .= "s";
-            $bindValues[] = $data->direccion;
+            $bindValues[] = $data->dni;
         }
         
         if (!empty($data->fecha_nacimiento)) {
@@ -243,6 +269,29 @@ if ($isPut) {
             $updateFields[] = "password = ?";
             $bindTypes .= "s";
             $bindValues[] = $data->password;
+        }
+        
+        // Actualizar el rol si se proporcionó
+        if (!empty($data->rol)) {
+            // Obtener el ID del rol basado en su nombre
+            $rolQuery = "SELECT id FROM roles WHERE nombre = ?";
+            $stmtRol = $conn->prepare($rolQuery);
+            $stmtRol->bind_param("s", $data->rol);
+            $stmtRol->execute();
+            $resultRol = $stmtRol->get_result();
+            
+            if ($resultRol->num_rows > 0) {
+                $rol = $resultRol->fetch_assoc();
+                $rolId = $rol['id'];
+                
+                $updateFields[] = "rol_id = ?";
+                $bindTypes .= "i";
+                $bindValues[] = $rolId;
+            } else {
+                http_response_code(400);
+                echo json_encode(array('success' => false, 'error' => 'Rol no encontrado'));
+                exit;
+            }
         }
         
         // Preparar la consulta si hay campos para actualizar
@@ -264,7 +313,7 @@ if ($isPut) {
             
             if ($stmt->execute()) {
                 // Obtener el usuario actualizado
-                $query = "SELECT u.id, u.nombre, u.email, u.telefono, u.direccion, u.fecha_nacimiento, r.nombre as rol, u.fecha_registro 
+                $query = "SELECT u.id, u.nombre, u.email, u.dni, u.telefono, u.fecha_nacimiento, r.nombre as rol, u.fecha_registro 
                           FROM usuarios u 
                           JOIN roles r ON u.rol_id = r.id
                           WHERE u.id = ?";
@@ -281,8 +330,8 @@ if ($isPut) {
                         'id' => $row['id'],
                         'nombre' => $row['nombre'],
                         'email' => $row['email'],
+                        'dni' => $row['dni'],
                         'telefono' => $row['telefono'],
-                        'direccion' => $row['direccion'],
                         'fecha_nacimiento' => $row['fecha_nacimiento'],
                         'rol' => $row['rol'],
                         'fechaRegistro' => $row['fecha_registro']

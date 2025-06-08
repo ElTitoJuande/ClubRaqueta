@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { obtenerUsuarios, registrarUsuario } from '../../data/db';
+import { obtenerUsuarios, registrarUsuario, actualizarUsuario } from '../../data/db';
 
 const GestionSocios = () => {
   const { usuario } = useAuth();
@@ -12,10 +12,13 @@ const GestionSocios = () => {
     email: '',
     password: '',
     rol: 'SOCIO',
-    telefono: ''
+    telefono: '',
+    dni: ''
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   // Cargar usuarios al montar el componente
   useEffect(() => {
@@ -64,6 +67,36 @@ const GestionSocios = () => {
       [name]: value
     }));
   };
+  
+  const resetForm = () => {
+    setFormData({
+      nombre: '',
+      email: '',
+      password: '',
+      rol: 'SOCIO',
+      telefono: '',
+      dni: ''
+    });
+    setEditMode(false);
+    setCurrentUserId(null);
+  };
+  
+  const handleEditarUsuario = (socio) => {
+    setFormData({
+      nombre: socio.nombre,
+      email: socio.email,
+      password: '', // No mostramos la contraseña por seguridad
+      rol: socio.rol,
+      telefono: socio.telefono || '',
+      dni: socio.dni || ''
+    });
+    
+    setEditMode(true);
+    setCurrentUserId(socio.id);
+    
+    // Hacer scroll hacia el formulario
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,24 +104,38 @@ const GestionSocios = () => {
     setSuccess('');
 
     try {
-      const resultado = await registrarUsuario(formData);
+      let resultado;
+      let mensaje;
+      
+      if (editMode) {
+        // Estamos actualizando un usuario existente
+        const userData = { ...formData, id: currentUserId };
+        
+        // Solo enviar la contraseña si se ha cambiado (no está vacía)
+        if (!userData.password) {
+          delete userData.password;
+        }
+        
+        resultado = await actualizarUsuario(userData);
+        mensaje = 'Usuario actualizado correctamente';
+      } else {
+        // Estamos creando un nuevo usuario
+        resultado = await registrarUsuario(formData);
+        mensaje = 'Usuario registrado correctamente';
+      }
+      
       if (resultado.success) {
-        // Recargar la lista completa después de añadir un usuario
+        // Recargar la lista completa después de modificar usuarios
         const respuesta = await obtenerUsuarios();
         if (respuesta.success) {
           setListaSocios(respuesta.usuarios);
         }
 
-        setFormData({
-          nombre: '',
-          email: '',
-          password: '',
-          rol: 'SOCIO',
-          telefono: ''
-        });
-        setSuccess('Usuario registrado correctamente');
+        // Resetear el formulario
+        resetForm();
+        setSuccess(mensaje);
       } else {
-        setError(resultado.error || 'Error al registrar el usuario');
+        setError(resultado.error || 'Error al procesar el usuario');
       }
     } catch (err) {
       setError('Error en la conexión con el servidor');
@@ -109,9 +156,23 @@ const GestionSocios = () => {
           </Link>
         </div>
 
-        {/* Formulario para agregar nuevo socio */}
+        {/* Formulario para agregar o editar usuario */}
         <div className="bg-white/10 backdrop-blur-lg p-6 rounded-xl shadow-lg mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">Agregar Nuevo Usuario</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-white">{editMode ? 'Editar Usuario' : 'Agregar Nuevo Usuario'}</h2>
+            {editMode && (
+              <button 
+                onClick={resetForm}
+                className="text-white/70 hover:text-white text-sm flex items-center"
+                type="button"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cancelar edición
+              </button>
+            )}
+          </div>
 
           {error && (
             <div className="bg-red-500/20 border border-red-500 text-white p-3 rounded-lg mb-4">
@@ -183,6 +244,21 @@ const GestionSocios = () => {
 
             <div>
               <label className="block text-white mb-2">
+                DNI
+              </label>
+              <input
+                type="text"
+                name="dni"
+                value={formData.dni}
+                onChange={handleChange}
+                placeholder="Ejemplo: 12345678X"
+                className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-white mb-2">
                 Rol
               </label>
               <select
@@ -202,7 +278,7 @@ const GestionSocios = () => {
                 type="submit"
                 className="px-4 py-2 bg-yellow-500 text-lime-900 rounded-lg hover:bg-yellow-400 transition-colors w-full"
               >
-                Agregar Usuario
+                {editMode ? 'Actualizar Usuario' : 'Agregar Usuario'}
               </button>
             </div>
           </form>
@@ -229,6 +305,7 @@ const GestionSocios = () => {
                     <th className="px-4 py-2 text-white">Nombre</th>
                     <th className="px-4 py-2 text-white">Email</th>
                     <th className="px-4 py-2 text-white">Rol</th>
+                    <th className="px-4 py-2 text-white">DNI</th>
                     <th className="px-4 py-2 text-white">Teléfono</th>
                     <th className="px-4 py-2 text-white">Acciones</th>
                   </tr>
@@ -240,9 +317,13 @@ const GestionSocios = () => {
                       <td className="px-4 py-2 text-white">{socio.nombre}</td>
                       <td className="px-4 py-2 text-white">{socio.email}</td>
                       <td className="px-4 py-2 text-white">{socio.rol}</td>
+                      <td className="px-4 py-2 text-white">{socio.dni}</td>
                       <td className="px-4 py-2 text-white">{socio.telefono}</td>
                       <td className="px-4 py-2 text-white">
-                        <button className="bg-yellow-500 text-lime-900 px-2 py-1 rounded mr-2 text-sm">
+                        <button 
+                          onClick={() => handleEditarUsuario(socio)}
+                          className="bg-yellow-500 text-lime-900 px-2 py-1 rounded mr-2 text-sm"
+                        >
                           Editar
                         </button>
                       </td>

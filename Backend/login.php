@@ -32,7 +32,7 @@ try {
     $conn = $database->getConnection();
     
     // Consultar el usuario por email
-    $query = "SELECT u.id, u.nombre, u.email, u.password, u.telefono, r.nombre as rol, u.fecha_registro 
+    $query = "SELECT u.id, u.nombre, u.email, u.password, u.telefono, u.dni, r.nombre as rol, u.fecha_registro 
               FROM usuarios u 
               JOIN roles r ON u.rol_id = r.id
               WHERE u.email = ?";
@@ -53,6 +53,7 @@ try {
                 'nombre' => $row['nombre'],
                 'email' => $row['email'],
                 'telefono' => $row['telefono'],
+                'dni' => $row['dni'],
                 'rol' => $row['rol'],
                 'fechaRegistro' => $row['fecha_registro']
             );

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ServicioModal from '../components/servicios/ServicioModal';
+import ModalGenerico from '../components/servicios/ModalGenerico';
 
 // Importamos los componentes creados
 import ServicioHero from '../components/servicios/ServicioHero';
@@ -8,8 +8,13 @@ import ServicioCTA from '../components/servicios/ServicioCTA';
 import { serviciosList, modalesList } from '../components/servicios/ServiciosUtils';
 
 const Servicios = () => {
-  // Estado para cada modal
-  const [modalIndex, setModalIndex] = useState(null);
+  // Estado para el modal actual
+  const [modalActual, setModalActual] = useState(null);
+  
+  // Función para encontrar el modal por ID de servicio
+  const encontrarModalPorId = (id) => {
+    return modalesList.find(modal => modal.id === id);
+  };
 
   return (
     <main className="overflow-hidden">
@@ -19,24 +24,26 @@ const Servicios = () => {
       {/* Servicios Section */}
       <ServiciosList 
         servicios={serviciosList} 
-        onServicioClick={setModalIndex} 
+        onServicioClick={(index) => {
+          // Obtenemos el ID del servicio seleccionado
+          const servicioId = serviciosList[index].id;
+          // Buscamos el modal correspondiente por ID
+          const modal = encontrarModalPorId(servicioId);
+          // Actualizamos el estado
+          setModalActual(modal);
+        }} 
       />
       
       {/* Call to Action Section */}
       <ServicioCTA />
-      {/* Modales de servicios */}
-      {modalIndex !== null && (
-        <ServicioModal
-          open={modalIndex !== null}
-          onClose={() => setModalIndex(null)}
-          titulo={modalesList[modalIndex].titulo}
-          icono={modalesList[modalIndex].icono}
-          imagenes={modalesList[modalIndex].imagenes}
-          boton={modalesList[modalIndex].boton}
-          maxWidth={modalesList[modalIndex].maxWidth}
-        >
-          {modalesList[modalIndex].contenido}
-        </ServicioModal>
+      {/* Modales de servicios - Nuevo componente genérico */}
+      {modalActual && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+          <ModalGenerico 
+            data={modalActual}
+            onClose={() => setModalActual(null)}
+          />
+        </div>
       )}
     </main>
   );
