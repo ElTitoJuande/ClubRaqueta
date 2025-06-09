@@ -159,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Método para actualizar usuario (perfil)
-// Detectar tanto PUT directo como POST con _method=PUT (para compatibilidad con navegadores/servidores que no soportan PUT directamente)
+// Detectar tanto PUT directo como POST con _method=PUT 
 $isPut = $_SERVER['REQUEST_METHOD'] === 'PUT' || ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_method']) && $_POST['_method'] === 'PUT');
 
 if ($isPut) {
