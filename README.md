@@ -20,9 +20,6 @@
       <p>Club Raqueta no es solo una aplicación, es una <i>revolución</i> en la gestión de clubs deportivos.</p>
       <p>Desarrollada por amantes del deporte para amantes del deporte, nuestra plataforma elimina la fricción entre la tecnología y la experiencia deportiva.</p>
     </td>
-    <td width="50%" align="center">
-      <img src="https://via.placeholder.com/400x200?text=Club+Raqueta" alt="Club Raqueta Experience">
-    </td>
   </tr>
 </table>
 
@@ -113,10 +110,6 @@ echo "Edita config.php con tus credenciales de BD"
 npm run dev
 ```
 
-## 📍 MAPA DE EXPERIENCIAS
-
-<img src="https://via.placeholder.com/800x200?text=Mapa+de+Experiencias+Club+Raqueta" width="100%" alt="Mapa de Experiencias">
-
 ### 👤 SOCIOS | LA EXPERIENCIA DEFINITIVA
 
 > "Club Raqueta transformó completamente nuestra forma de gestionar reservas" - *Miguel S., Club Tenis Sierra*
@@ -198,37 +191,11 @@ graph TD
       <a href="#"><img src="https://img.shields.io/badge/Discord-Unirse_a_la_comunidad-5865F2?style=for-the-badge&logo=discord" alt="Discord"></a>
       <a href="#"><img src="https://img.shields.io/badge/GitHub-Contribuir-181717?style=for-the-badge&logo=github" alt="GitHub"></a>
     </td>
-    <td width="40%" align="center">
-      <img src="https://via.placeholder.com/300x200?text=Community" alt="Comunidad">
-    </td>
   </tr>
 </table>
 
 ---
 
-<div align="center">
-
-# DESARROLLADO CON PASIÓN DEPORTIVA 🎾
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="https://via.placeholder.com/100x100?text=JD" alt="Juande" width="100" style="border-radius:50%"><br>
-      <b>Juande</b><br>
-      <small>Fundador & Visión</small>
-    </td>
-    <td align="center">
-      <img src="https://via.placeholder.com/100x100?text=Team" alt="Equipo" width="100" style="border-radius:50%"><br>
-      <b>Equipo Tito</b><br>
-      <small>Desarrollo & Diseño</small>
-    </td>
-    <td align="center">
-      <img src="https://via.placeholder.com/100x100?text=You" alt="Tú" width="100" style="border-radius:50%"><br>
-      <b>Tú</b><br>
-      <small>Siguiente Colaborador</small>
-    </td>
-  </tr>
-</table>
 
 <br>
 
